@@ -23,6 +23,8 @@ ComfyUIを再起動し、SnapRefのMODEL出力とKSamplerの間に **SnapRef →
 
 ## サンプル
 
+[生成画像とプロンプトの内容一覧](examples/README.md)
+
 `examples/input` の画像を `ComfyUI/input` にコピーし、JSONをComfyUIで開きます。モデル・CLIP・VAE・アダプターのファイル名を手元のものに変更して実行してください。
 
 | ワークフロー（examples内） | 内容 | 出力 |

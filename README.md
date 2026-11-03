@@ -23,6 +23,8 @@ Restart ComfyUI. Connect **SnapRef → SnapRef Region Mask** between SnapRef's M
 
 ## Samples
 
+[Example images and prompt descriptions (Japanese)](examples/README.md)
+
 Copy images from `examples/input` to `ComfyUI/input`, open a workflow JSON in ComfyUI, and select your model, CLIP, VAE and adapter files.
 
 | Workflow (in examples) | Scene | Output |
