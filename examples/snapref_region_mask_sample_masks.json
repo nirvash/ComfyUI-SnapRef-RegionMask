@@ -295,7 +295,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "masterpiece, best quality, 2girls, chibi, park, big tree, sunny day, blue sky, full body, the girl at the top is sitting on a tree branch and waving down, the girl at the bottom is standing on the grass below the tree, looking up and waving back, the girl at the top has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl at the bottom has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
+        "masterpiece, best quality, 2girls, chibi, park, big tree, sunny day, blue sky, full body, the girl at the top is clinging to a tree branch with both arms, nervous, teary eyes, the girl at the bottom is standing on the grass below the tree, looking up worriedly with both hands raised to catch her, the girl at the top has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl at the bottom has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
       ]
     },
     {
@@ -420,7 +420,7 @@
         "Node name for S&R": "KSampler"
       },
       "widgets_values": [
-        20261103502,
+        20261103501,
         "fixed",
         30,
         4.0,

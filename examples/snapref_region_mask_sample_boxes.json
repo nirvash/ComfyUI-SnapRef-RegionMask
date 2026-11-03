@@ -295,7 +295,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, the girl on the right laughs while holding a latte cup, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress"
+        "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress"
       ]
     },
     {
@@ -420,7 +420,7 @@
         "Node name for S&R": "KSampler"
       },
       "widgets_values": [
-        20261103502,
+        20261103504,
         "fixed",
         30,
         4.0,

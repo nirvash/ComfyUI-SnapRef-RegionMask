@@ -1,0 +1,176 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "hakushiMixAnima_v10.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_06b_base.safetensors",
+      "type": "stable_diffusion",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "7": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_B.png"
+    }
+  },
+  "8": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_A.png"
+    }
+  },
+  "4": {
+    "class_type": "SnapRef",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "clip": [
+        "2",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "image": [
+        "7",
+        0
+      ],
+      "image_2": [
+        "8",
+        0
+      ],
+      "adapter": "snapref_v2a_pre2.safetensors",
+      "mode": "cs",
+      "ref_in_uncond": false,
+      "ref_megapixels": 1.0,
+      "strength": 0.0,
+      "ref_caption": "",
+      "ref_guidance_on": false,
+      "ref_guidance": 4.5,
+      "correction": "apg",
+      "ref_end": 1.0,
+      "use_batch": false,
+      "multi_layout": "separate",
+      "weight_1": 1.0,
+      "weight_2": 1.0,
+      "weight_3": 1.0,
+      "fidelity": 1.0
+    }
+  },
+  "9": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": "masterpiece, best quality, 2girls, arcade, side-view composition, a girl playing a claw machine, the player on the right is shown in right-facing profile, her face and torso and feet all facing right toward the machine, the machine is at the right edge, its front glass and control console face left toward the player, the machine is seen obliquely from its side, perpendicular to the camera, a hanging claw visible above plush toys through the glass, the operating girl stands close to the console, looking right through the glass, both forearms extend forward to the right and down to the horizontal control surface at her waist, one hand on the short joystick fixed to the console and the other hand on its button, small confident smile, the girl on the right has a silver bob, golden eyes, red beret, white blouse with a large black ribbon bow, black high-waist skirt, no glasses, the girl on the left stands behind her friend, in a three-quarter view turned toward the machine on the right, long wavy teal hair, purple eyes, yellow hair ribbon, round glasses, pastel yellow knit cardigan over a white lace dress, excited open triangle-shaped mouth, triangle mouth, hands clasped in front of her chest"
+    }
+  },
+  "10": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, extra limbs, bad anatomy, bad hands, fused bodies, extra person, reflection, mirror, third girl, floating joystick, handheld stick, player looking at viewer, player facing camera, frontal view of the player, gamepad"
+    }
+  },
+  "20": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 1216,
+      "height": 832,
+      "batch_size": 1
+    }
+  },
+  "15": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "5",
+        0
+      ],
+      "positive": [
+        "9",
+        0
+      ],
+      "negative": [
+        "10",
+        0
+      ],
+      "latent_image": [
+        "20",
+        0
+      ],
+      "seed": 20261103502,
+      "steps": 30,
+      "cfg": 4.0,
+      "sampler_name": "er_sde",
+      "scheduler": "simple",
+      "denoise": 1.0
+    }
+  },
+  "16": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "15",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "17": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "16",
+        0
+      ],
+      "filename_prefix": "regionmask_publish_20261103/arcade_boxes_claw_2"
+    }
+  },
+  "5": {
+    "class_type": "SnapRefRegionMask",
+    "inputs": {
+      "model": [
+        "4",
+        0
+      ],
+      "layout": "boxes",
+      "split": 0.32,
+      "feather": 0.03,
+      "outside_strength": 0.0,
+      "ref_start": 0.1,
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.32,
+      "height": 1.0,
+      "x_2": 0.32,
+      "y_2": 0.0,
+      "width_2": 0.43,
+      "height_2": 1.0
+    }
+  }
+}
