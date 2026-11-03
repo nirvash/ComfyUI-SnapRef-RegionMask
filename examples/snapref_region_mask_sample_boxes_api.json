@@ -1,0 +1,168 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "hakushiMixAnima_v10.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_06b_base.safetensors",
+      "type": "stable_diffusion",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "7": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_A.png"
+    }
+  },
+  "8": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_B.png"
+    }
+  },
+  "4": {
+    "class_type": "SnapRef",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "clip": [
+        "2",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "image": [
+        "7",
+        0
+      ],
+      "image_2": [
+        "8",
+        0
+      ],
+      "adapter": "snapref_v2a_pre2.safetensors",
+      "mode": "cs",
+      "ref_in_uncond": false,
+      "ref_megapixels": 1.0,
+      "strength": 0.0,
+      "ref_caption": "",
+      "ref_guidance_on": false,
+      "ref_guidance": 4.5,
+      "correction": "apg",
+      "ref_end": 1.0,
+      "use_batch": false,
+      "multi_layout": "separate",
+      "weight_1": 1.0,
+      "weight_2": 1.0,
+      "weight_3": 1.0,
+      "fidelity": 1.0
+    }
+  },
+  "9": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, the girl on the right laughs while holding a latte cup, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress"
+    }
+  },
+  "10": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, extra limbs, bad anatomy, bad hands, fused bodies, extra person"
+    }
+  },
+  "20": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 1216,
+      "height": 832,
+      "batch_size": 1
+    }
+  },
+  "15": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "5",
+        0
+      ],
+      "positive": [
+        "9",
+        0
+      ],
+      "negative": [
+        "10",
+        0
+      ],
+      "latent_image": [
+        "20",
+        0
+      ],
+      "seed": 20261103502,
+      "steps": 30,
+      "cfg": 4.0,
+      "sampler_name": "er_sde",
+      "scheduler": "simple",
+      "denoise": 1.0
+    }
+  },
+  "16": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "15",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "17": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "16",
+        0
+      ],
+      "filename_prefix": "SnapRefRegionMask"
+    }
+  },
+  "5": {
+    "class_type": "SnapRefRegionMask",
+    "inputs": {
+      "model": [
+        "4",
+        0
+      ],
+      "layout": "left_right",
+      "split": 0.5,
+      "feather": 0.05,
+      "outside_strength": 0.0,
+      "ref_start": 0.1
+    }
+  }
+}

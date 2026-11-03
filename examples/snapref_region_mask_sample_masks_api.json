@@ -1,0 +1,190 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "hakushiMixAnima_v10.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_06b_base.safetensors",
+      "type": "stable_diffusion",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "7": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_C.png"
+    }
+  },
+  "8": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_D.png"
+    }
+  },
+  "4": {
+    "class_type": "SnapRef",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "clip": [
+        "2",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "image": [
+        "7",
+        0
+      ],
+      "image_2": [
+        "8",
+        0
+      ],
+      "adapter": "snapref_v2a_pre2.safetensors",
+      "mode": "cs",
+      "ref_in_uncond": false,
+      "ref_megapixels": 1.0,
+      "strength": 0.0,
+      "ref_caption": "",
+      "ref_guidance_on": false,
+      "ref_guidance": 4.5,
+      "correction": "apg",
+      "ref_end": 1.0,
+      "use_batch": false,
+      "multi_layout": "separate",
+      "weight_1": 1.0,
+      "weight_2": 1.0,
+      "weight_3": 1.0,
+      "fidelity": 1.0
+    }
+  },
+  "9": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": "masterpiece, best quality, 2girls, chibi, park, big tree, sunny day, blue sky, full body, the girl at the top is sitting on a tree branch and waving down, the girl at the bottom is standing on the grass below the tree, looking up and waving back, the girl at the top has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl at the bottom has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
+    }
+  },
+  "10": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, extra limbs, bad anatomy, bad hands, fused bodies, extra person"
+    }
+  },
+  "20": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 832,
+      "height": 1216,
+      "batch_size": 1
+    }
+  },
+  "15": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "5",
+        0
+      ],
+      "positive": [
+        "9",
+        0
+      ],
+      "negative": [
+        "10",
+        0
+      ],
+      "latent_image": [
+        "20",
+        0
+      ],
+      "seed": 20261103502,
+      "steps": 30,
+      "cfg": 4.0,
+      "sampler_name": "er_sde",
+      "scheduler": "simple",
+      "denoise": 1.0
+    }
+  },
+  "16": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "15",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "17": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "16",
+        0
+      ],
+      "filename_prefix": "SnapRefRegionMask"
+    }
+  },
+  "60": {
+    "class_type": "LoadImageMask",
+    "inputs": {
+      "image": "snapref_region_mask_mask_top.png",
+      "channel": "red"
+    }
+  },
+  "61": {
+    "class_type": "LoadImageMask",
+    "inputs": {
+      "image": "snapref_region_mask_mask_bottom.png",
+      "channel": "red"
+    }
+  },
+  "5": {
+    "class_type": "SnapRefRegionMask",
+    "inputs": {
+      "model": [
+        "4",
+        0
+      ],
+      "layout": "top_bottom",
+      "split": 0.5,
+      "feather": 0.05,
+      "outside_strength": 0.0,
+      "ref_start": 0.1,
+      "mask_1": [
+        "60",
+        0
+      ],
+      "mask_2": [
+        "61",
+        0
+      ]
+    }
+  }
+}

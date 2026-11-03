@@ -1,0 +1,10 @@
+ComfyUI-SnapRef-RegionMask
+Copyright 2026 nirvash
+
+This product is an add-on for SnapRef (https://github.com/ArcAnima/SnapRef),
+licensed under the Apache License, Version 2.0. It hooks into SnapRef's
+self-attention patch at run time and follows SnapRef's approach of merging
+attention groups by their log-sum-exp. SnapRef itself is not included.
+
+The sample reference images in examples/input and the images in docs were
+generated with an Anima-based model and are provided as examples only.
