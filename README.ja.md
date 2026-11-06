@@ -10,6 +10,8 @@ Animaの[SnapRef](https://github.com/ArcAnima/SnapRef)に、参照画像ごと�
 
 ![ちびキャラの左右・上下配置](docs/chibi.png)
 
+![自動マスク：領域を描かずに生成から推定した領域と、最終画像](docs/auto_mask.png)
+
 ## 導入・使い方
 
 Anima対応のComfyUI、SnapRefノードとアダプター、Animaのモデル・テキストエンコーダー・VAE、fp16/bf16対応のCUDA GPUが必要です。

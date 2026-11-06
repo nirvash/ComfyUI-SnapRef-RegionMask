@@ -10,6 +10,8 @@ Assign a region to each [SnapRef](https://github.com/ArcAnima/SnapRef) reference
 
 ![Chibi characters in left/right and top/bottom layouts](docs/chibi.png)
 
+![Automatic masks: regions estimated from the generation itself, then the final image](docs/auto_mask.png)
+
 ## Install and use
 
 Requires ComfyUI with Anima support, the SnapRef node and adapter, an Anima model with matching text encoder and VAE, and a CUDA GPU supporting fp16/bf16.
