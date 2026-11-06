@@ -2,7 +2,7 @@
 
 [English](README.md) | 日本語
 
-Animaの[SnapRef](https://github.com/ArcAnima/SnapRef)に、参照画像ごとの領域を指定するノードです。2人の髪・服・小物の混入を抑えます。左右・上下の分割、長方形、任意のMASKが使えます。
+Animaの[SnapRef](https://github.com/ArcAnima/SnapRef)に、参照画像ごとの領域を指定するノードです。2人の髪・服・小物の混入を抑えます。左右・上下の分割、長方形、任意のMASKが使えます。領域を描かずに、生成そのものから推定することもできます（[自動マスク](#自動マスク試験的)、試験的）。
 
 ![上段：SnapRefのみ、下段：Region Maskあり。同じシードとプロンプト](docs/comparison.png)
 
@@ -32,7 +32,7 @@ ComfyUIを再起動し、SnapRefのMODEL出力とKSamplerの間に **SnapRef →
 | `snapref_region_mask_sample_boxes.json` | Aを左、Bを右に配置 | `sample_boxes_output.png` |
 | `snapref_region_mask_sample_masks.json` | MASKでCを上、Dを下に配置 | `sample_masks_output.png` |
 | `snapref_region_mask_sample_arcade.json` | 参照を左右交換：Bが左で△口、Aが右側の筐体を操作。boxで筐体を参照領域から除外 | `sample_arcade_output.png` |
-| `snapref_region_mask_sample_auto_api.json`（APIのみ） | カフェのプロンプトを、固定の左右分割ではなく自動マスクで生成（人物語 `girl on the left` / `girl on the right`） | `sample_auto_output.png`、`sample_auto_regions.png` |
+| `snapref_region_mask_sample_auto.json` | カフェのプロンプトを、固定の左右分割ではなく自動マスクで生成（人物語 `girl on the left` / `girl on the right`） | `sample_auto_output.png`（推定領域：`sample_auto_regions.png`） |
 
 `*_api.json` はAPI形式です。出力PNGにもワークフローを埋め込んでいます。Region Maskノードをバイパス（Ctrl+B）すると、同条件でノードなしの結果を比較できます。
 
@@ -77,6 +77,8 @@ MASKはモデルのトークン格子に合わせてリサイズされます。3
 1. **下書き**: モデル → Region Probe → KSamplerAdvanced で 0〜4 step（`return_with_leftover_noise = disable`）→ VAEDecode → Auto Mask → マスク M4
 2. **推定し直し**: SnapRef → Region Mask（M4）→ Region Probe → SamplerCustomAdvanced で 30 step スケジュールの最初の 8 step（BasicScheduler → SplitSigmas を 8 で分割）→ `denoised_output` を VAEDecode → Auto Mask → マスク M8。Region Mask は 8 step の区間の中で進み具合を数えるので、`ref_start = 0.3125` にして、30 step の `0.1` と同じく 0〜2 step を参照なしにします
 3. **本番**: SnapRef → Region Mask（M8、`ref_start = 0.1`）→ KSampler で 30 step
+
+サンプルのワークフロー `examples/snapref_region_mask_sample_auto.json` は、この構成を3つのグループに分けてあります。Region Probe の `text` はポジティブプロンプトと完全に同じにしてください。プロンプトを変えたら、2つの Probe にも同じ文を貼り付けます。推定し直しの段の `ref_start` は画面では 0.31 と表示されますが、参照なしになる step は同じです。
 
 推定し直しの段でも参照を読むので、構図が本番とそろいます。下書きだけのマスクは、SnapRef で構図が変わるとずれます。1〜2段目で、832×1216 なら約5〜6秒増えます。
 

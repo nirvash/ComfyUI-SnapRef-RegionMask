@@ -9,7 +9,7 @@
 | [カフェ](#カフェ左右分割) | A＝左、B＝右 | 左右分割 | [UI](snapref_region_mask_sample_boxes.json) / [API](snapref_region_mask_sample_boxes_api.json) |
 | [木の上と下](#木の上と下上下mask) | C＝上、D＝下 | 上下のMASK | [UI](snapref_region_mask_sample_masks.json) / [API](snapref_region_mask_sample_masks_api.json) |
 | [クレーンゲーム](#クレーンゲーム左右交換box) | B＝左、A＝右 | 人物ごとのbox | [UI](snapref_region_mask_sample_arcade.json) / [API](snapref_region_mask_sample_arcade_api.json) |
-| [カフェ（自動マスク）](#カフェ自動マスク) | A＝左、B＝右 | 自動マスク | [API](snapref_region_mask_sample_auto_api.json) |
+| [カフェ（自動マスク）](#カフェ自動マスク) | A＝左、B＝右 | 自動マスク | [UI](snapref_region_mask_sample_auto.json) / [API](snapref_region_mask_sample_auto_api.json) |
 
 ## カフェ：左右分割
 
@@ -59,7 +59,9 @@
 
 左の子の顔と体は参照1（赤）、右の子は参照2（青）になっています。左の子のベレー帽と頭頂部は青側に入っており、推定は完全ではありません。
 
-[生成画像](sample_auto_output.png) · [推定した領域](sample_auto_regions.png) · [正確なプロンプト・設定（API JSON）](snapref_region_mask_sample_auto_api.json)
+ワークフローは「1. 下書き」「2. 推定し直し」「3. 本番」の3グループです。Region Probe の `text` はプロンプトと同じ文にしておく必要があるので、プロンプトを変えたら2つの Probe にも貼り付けてください。
+
+[生成画像](sample_auto_output.png) · [推定した領域](sample_auto_regions.png) · [ワークフロー](snapref_region_mask_sample_auto.json) · [正確なプロンプト・設定（API JSON）](snapref_region_mask_sample_auto_api.json)
 
 ## 参照画像
 

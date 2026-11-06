@@ -1,0 +1,2999 @@
+{
+  "id": "0edcdde9-6de7-4a84-8c73-df19aca93051",
+  "revision": 0,
+  "last_node_id": 119,
+  "last_link_id": 51,
+  "nodes": [
+    {
+      "id": 4,
+      "type": "SnapRef",
+      "pos": [
+        0,
+        2463.999634470258
+      ],
+      "size": [
+        420,
+        548
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "localized_name": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        },
+        {
+          "localized_name": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 3
+        },
+        {
+          "localized_name": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 4
+        },
+        {
+          "localized_name": "image_2",
+          "name": "image_2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 5
+        },
+        {
+          "localized_name": "image_3",
+          "name": "image_3",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "localized_name": "adapter",
+          "name": "adapter",
+          "type": "COMBO",
+          "widget": {
+            "name": "adapter"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "mode",
+          "name": "mode",
+          "type": "COMBO",
+          "widget": {
+            "name": "mode"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_in_uncond",
+          "name": "ref_in_uncond",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "ref_in_uncond"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_megapixels",
+          "name": "ref_megapixels",
+          "type": "FLOAT",
+          "widget": {
+            "name": "ref_megapixels"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "strength",
+          "name": "strength",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_caption",
+          "name": "ref_caption",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "ref_caption"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_guidance_on",
+          "name": "ref_guidance_on",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "ref_guidance_on"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_guidance",
+          "name": "ref_guidance",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "ref_guidance"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "correction",
+          "name": "correction",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "correction"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_end",
+          "name": "ref_end",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "ref_end"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "use_batch",
+          "name": "use_batch",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "use_batch"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "multi_layout",
+          "name": "multi_layout",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "multi_layout"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "weight_1",
+          "name": "weight_1",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "weight_1"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "weight_2",
+          "name": "weight_2",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "weight_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "weight_3",
+          "name": "weight_3",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "weight_3"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "fidelity",
+          "name": "fidelity",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "fidelity"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "モデル",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            6,
+            47
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SnapRef"
+      },
+      "widgets_values": [
+        "snapref_v2a_pre2.safetensors",
+        "cs",
+        false,
+        1,
+        0,
+        "",
+        false,
+        4.5,
+        "apg",
+        1,
+        false,
+        "separate",
+        1,
+        1,
+        1,
+        1
+      ],
+      "widgets_values_named": {
+        "adapter": "snapref_v2a_pre2.safetensors",
+        "mode": "cs",
+        "ref_in_uncond": false,
+        "ref_megapixels": 1,
+        "strength": 0,
+        "ref_caption": "",
+        "ref_guidance_on": false,
+        "ref_guidance": 4.5,
+        "correction": "apg",
+        "ref_end": 1,
+        "use_batch": false,
+        "multi_layout": "separate",
+        "weight_1": 1,
+        "weight_2": 1,
+        "weight_3": 1,
+        "fidelity": 1
+      }
+    },
+    {
+      "id": 5,
+      "type": "SnapRefRegionMask",
+      "pos": [
+        1240,
+        80
+      ],
+      "size": [
+        420,
+        386
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 6
+        },
+        {
+          "localized_name": "mask_1",
+          "name": "mask_1",
+          "shape": 7,
+          "type": "MASK",
+          "link": 7
+        },
+        {
+          "localized_name": "mask_2",
+          "name": "mask_2",
+          "shape": 7,
+          "type": "MASK",
+          "link": 8
+        },
+        {
+          "localized_name": "layout",
+          "name": "layout",
+          "type": "COMBO",
+          "widget": {
+            "name": "layout"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "split",
+          "name": "split",
+          "type": "FLOAT",
+          "widget": {
+            "name": "split"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "feather",
+          "name": "feather",
+          "type": "FLOAT",
+          "widget": {
+            "name": "feather"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "outside_strength",
+          "name": "outside_strength",
+          "type": "FLOAT",
+          "widget": {
+            "name": "outside_strength"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_start",
+          "name": "ref_start",
+          "type": "FLOAT",
+          "widget": {
+            "name": "ref_start"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "x",
+          "name": "x",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "x"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "y",
+          "name": "y",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "y"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "width",
+          "name": "width",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height",
+          "name": "height",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "x_2",
+          "name": "x_2",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "x_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "y_2",
+          "name": "y_2",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "y_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "width_2",
+          "name": "width_2",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "width_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height_2",
+          "name": "height_2",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "height_2"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "モデル",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            33
+          ]
+        }
+      ],
+      "title": "Region Mask (draft masks)",
+      "properties": {
+        "Node name for S&R": "SnapRefRegionMask"
+      },
+      "widgets_values": [
+        "left_right",
+        0.5,
+        0.05,
+        0,
+        0.31,
+        0,
+        0,
+        0.5,
+        1,
+        0.5,
+        0,
+        0,
+        1
+      ],
+      "widgets_values_named": {
+        "layout": "left_right",
+        "split": 0.5,
+        "feather": 0.05,
+        "outside_strength": 0,
+        "ref_start": 0.31,
+        "x": 0,
+        "y": 0,
+        "width": 0.5,
+        "height": 1,
+        "x_2": 0.5,
+        "y_2": 0,
+        "width_2": 0,
+        "height_2": 1
+      }
+    },
+    {
+      "id": 7,
+      "type": "LoadImage",
+      "pos": [
+        0,
+        1579.999826295035
+      ],
+      "size": [
+        420,
+        102
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "画像",
+          "name": "image",
+          "type": "COMBO",
+          "widget": {
+            "name": "image"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "アップロードするファイルを選択",
+          "name": "upload",
+          "type": "IMAGEUPLOAD",
+          "widget": {
+            "name": "upload"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "画像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            4
+          ]
+        },
+        {
+          "localized_name": "マスク",
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 1 (girl on the left)",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "snapref_region_mask_ref_A.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "snapref_region_mask_ref_A.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [
+        1860,
+        1043.9998517717634
+      ],
+      "size": [
+        420,
+        46
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "サンプル",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 9
+        },
+        {
+          "localized_name": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "画像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            17,
+            30
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 11,
+      "type": "CLIPTextEncode",
+      "pos": [
+        0,
+        701.9999115807669
+      ],
+      "size": [
+        420,
+        200
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "クリップ",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 11
+        },
+        {
+          "localized_name": "テキスト",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "条件付け",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            14,
+            22,
+            38
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress"
+      ],
+      "widgets_values_named": {
+        "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress"
+      }
+    },
+    {
+      "id": 12,
+      "type": "CLIPTextEncode",
+      "pos": [
+        0,
+        1021.9998271124703
+      ],
+      "size": [
+        420,
+        200
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "クリップ",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 12
+        },
+        {
+          "localized_name": "テキスト",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "条件付け",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            15,
+            23,
+            39
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, extra limbs, bad anatomy, bad hands, fused bodies, extra person"
+      ],
+      "widgets_values_named": {
+        "text": "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, extra limbs, bad anatomy, bad hands, fused bodies, extra person"
+      }
+    },
+    {
+      "id": 15,
+      "type": "VAELoader",
+      "pos": [
+        0,
+        519.9999468667166
+      ],
+      "size": [
+        420,
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "vae_name",
+          "name": "vae_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "vae_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "VAE",
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            3,
+            10,
+            26,
+            46
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "qwen_image_vae.safetensors"
+      ],
+      "widgets_values_named": {
+        "vae_name": "qwen_image_vae.safetensors"
+      }
+    },
+    {
+      "id": 19,
+      "type": "KSampler",
+      "pos": [
+        1860,
+        661.9999204363141
+      ],
+      "size": [
+        420,
+        262
+      ],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "モデル",
+          "name": "model",
+          "type": "MODEL",
+          "link": 13
+        },
+        {
+          "localized_name": "ポジティブ",
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 14
+        },
+        {
+          "localized_name": "ネガティブ",
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 15
+        },
+        {
+          "localized_name": "潜在画像",
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 16
+        },
+        {
+          "localized_name": "シード",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ステップ",
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cfg",
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "サンプラー名",
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "スケジューラ",
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ノイズ除去",
+          "name": "denoise",
+          "type": "FLOAT",
+          "widget": {
+            "name": "denoise"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "潜在",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            9
+          ]
+        }
+      ],
+      "title": "Final: 30 steps",
+      "properties": {
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        20261103504,
+        "fixed",
+        30,
+        4,
+        "er_sde",
+        "simple",
+        1
+      ],
+      "widgets_values_named": {
+        "seed": 20261103504,
+        "control_after_generate": "fixed",
+        "steps": 30,
+        "cfg": 4,
+        "sampler_name": "er_sde",
+        "scheduler": "simple",
+        "denoise": 1
+      }
+    },
+    {
+      "id": 28,
+      "type": "EmptyLatentImage",
+      "pos": [
+        0,
+        1341.999817575727
+      ],
+      "size": [
+        420,
+        106
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "幅",
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "高さ",
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "バッチサイズ",
+          "name": "batch_size",
+          "type": "INT",
+          "widget": {
+            "name": "batch_size"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "潜在",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            16,
+            24,
+            44
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        1216,
+        832,
+        1
+      ],
+      "widgets_values_named": {
+        "width": 1216,
+        "height": 832,
+        "batch_size": 1
+      }
+    },
+    {
+      "id": 44,
+      "type": "UNETLoader",
+      "pos": [
+        0,
+        80
+      ],
+      "size": [
+        420,
+        82
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "unet_name",
+          "name": "unet_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "unet_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "重みdtype",
+          "name": "weight_dtype",
+          "type": "COMBO",
+          "widget": {
+            "name": "weight_dtype"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "モデル",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            1,
+            18,
+            35
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "hakushiMixAnima_v10.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "unet_name": "hakushiMixAnima_v10.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    {
+      "id": 45,
+      "type": "CLIPLoader",
+      "pos": [
+        0,
+        285.9999643053327
+      ],
+      "size": [
+        420,
+        106
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "clip名",
+          "name": "clip_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "タイプ",
+          "name": "type",
+          "type": "COMBO",
+          "widget": {
+            "name": "type"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "デバイス",
+          "name": "device",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "device"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "CLIP",
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            2,
+            11,
+            12,
+            19,
+            34
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "qwen_3_06b_base.safetensors",
+        "stable_diffusion",
+        "default"
+      ],
+      "widgets_values_named": {
+        "clip_name": "qwen_3_06b_base.safetensors",
+        "type": "stable_diffusion",
+        "device": "default"
+      }
+    },
+    {
+      "id": 62,
+      "type": "SaveImage",
+      "pos": [
+        1860,
+        1217.9998465946742
+      ],
+      "size": [
+        420,
+        58
+      ],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "画像",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 17
+        },
+        {
+          "localized_name": "ファイル名_プレフィックス",
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "title": "Save final image",
+      "properties": {},
+      "widgets_values": [
+        "snapref_region_auto_mask_output"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "snapref_region_auto_mask_output"
+      }
+    },
+    {
+      "id": 72,
+      "type": "LoadImage",
+      "pos": [
+        0,
+        2021.9997303826467
+      ],
+      "size": [
+        420,
+        102
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "画像",
+          "name": "image",
+          "type": "COMBO",
+          "widget": {
+            "name": "image"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "アップロードするファイルを選択",
+          "name": "upload",
+          "type": "IMAGEUPLOAD",
+          "widget": {
+            "name": "upload"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "画像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            5
+          ]
+        },
+        {
+          "localized_name": "マスク",
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 2 (girl on the right)",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "snapref_region_mask_ref_B.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "snapref_region_mask_ref_B.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 90,
+      "type": "SnapRefRegionProbe",
+      "pos": [
+        620,
+        80
+      ],
+      "size": [
+        420,
+        296
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 18
+        },
+        {
+          "localized_name": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 19
+        },
+        {
+          "localized_name": "continue_from",
+          "name": "continue_from",
+          "shape": 7,
+          "type": "REGION_PROBE",
+          "link": null
+        },
+        {
+          "localized_name": "text",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "person_1",
+          "name": "person_1",
+          "type": "STRING",
+          "widget": {
+            "name": "person_1"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "person_2",
+          "name": "person_2",
+          "type": "STRING",
+          "widget": {
+            "name": "person_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "block_weights",
+          "name": "block_weights",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "block_weights"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "dump_path",
+          "name": "dump_path",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "dump_path"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "auto_mask",
+          "name": "auto_mask",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "auto_mask"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "step_offset",
+          "name": "step_offset",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "step_offset"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "total_steps",
+          "name": "total_steps",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "total_steps"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "モデル",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            21
+          ]
+        },
+        {
+          "localized_name": "REGION_PROBE",
+          "name": "REGION_PROBE",
+          "type": "REGION_PROBE",
+          "links": [
+            28
+          ]
+        }
+      ],
+      "title": "Region Probe (draft)",
+      "properties": {
+        "Node name for S&R": "SnapRefRegionProbe"
+      },
+      "widgets_values": [
+        "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+        "girl on the left",
+        "girl on the right",
+        "none",
+        "",
+        "hakushi_anima_gt_v1",
+        0,
+        0
+      ],
+      "widgets_values_named": {
+        "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+        "person_1": "girl on the left",
+        "person_2": "girl on the right",
+        "block_weights": "none",
+        "dump_path": "",
+        "auto_mask": "hakushi_anima_gt_v1",
+        "step_offset": 0,
+        "total_steps": 0
+      }
+    },
+    {
+      "id": 92,
+      "type": "SaveImage",
+      "pos": [
+        1860,
+        1727.9998540878296
+      ],
+      "size": [
+        420,
+        58
+      ],
+      "flags": {},
+      "order": 28,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "画像",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 20
+        },
+        {
+          "localized_name": "ファイル名_プレフィックス",
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "title": "Save panel",
+      "properties": {},
+      "widgets_values": [
+        "snapref_region_auto_mask_panel"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "snapref_region_auto_mask_panel"
+      }
+    },
+    {
+      "id": 93,
+      "type": "KSamplerAdvanced",
+      "pos": [
+        620,
+        585.999902997698
+      ],
+      "size": [
+        420,
+        334
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "モデル",
+          "name": "model",
+          "type": "MODEL",
+          "link": 21
+        },
+        {
+          "localized_name": "ポジティブ",
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 22
+        },
+        {
+          "localized_name": "ネガティブ",
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 23
+        },
+        {
+          "localized_name": "潜在画像",
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 24
+        },
+        {
+          "localized_name": "ノイズ追加",
+          "name": "add_noise",
+          "type": "COMBO",
+          "widget": {
+            "name": "add_noise"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ノイズシード",
+          "name": "noise_seed",
+          "type": "INT",
+          "widget": {
+            "name": "noise_seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ステップ",
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cfg",
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "サンプラー名",
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "スケジューラ",
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ステップ開始",
+          "name": "start_at_step",
+          "type": "INT",
+          "widget": {
+            "name": "start_at_step"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ステップ終了",
+          "name": "end_at_step",
+          "type": "INT",
+          "widget": {
+            "name": "end_at_step"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "残りのノイズと一緒に返す",
+          "name": "return_with_leftover_noise",
+          "type": "COMBO",
+          "widget": {
+            "name": "return_with_leftover_noise"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "潜在",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            25
+          ]
+        }
+      ],
+      "title": "Draft: steps 0-4, no SnapRef",
+      "properties": {
+        "Node name for S&R": "KSamplerAdvanced"
+      },
+      "widgets_values": [
+        "enable",
+        20261103504,
+        "fixed",
+        30,
+        4,
+        "er_sde",
+        "simple",
+        0,
+        4,
+        "disable"
+      ],
+      "widgets_values_named": {
+        "add_noise": "enable",
+        "noise_seed": 20261103504,
+        "control_after_generate": "fixed",
+        "steps": 30,
+        "cfg": 4,
+        "sampler_name": "er_sde",
+        "scheduler": "simple",
+        "start_at_step": 0,
+        "end_at_step": 4,
+        "return_with_leftover_noise": "disable"
+      }
+    },
+    {
+      "id": 94,
+      "type": "VAEDecode",
+      "pos": [
+        620,
+        1039.9998256138392
+      ],
+      "size": [
+        420,
+        46
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "サンプル",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 25
+        },
+        {
+          "localized_name": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 26
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "画像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            27
+          ]
+        }
+      ],
+      "title": "VAE Decode (draft)",
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 95,
+      "type": "SnapRefRegionAutoMask",
+      "pos": [
+        620,
+        1213.9997380120412
+      ],
+      "size": [
+        420,
+        78
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 27
+        },
+        {
+          "localized_name": "probe",
+          "name": "probe",
+          "type": "REGION_PROBE",
+          "link": 28
+        },
+        {
+          "localized_name": "weights",
+          "name": "weights",
+          "type": "COMBO",
+          "widget": {
+            "name": "weights"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "mask_1",
+          "name": "mask_1",
+          "type": "MASK",
+          "links": [
+            7
+          ]
+        },
+        {
+          "localized_name": "mask_2",
+          "name": "mask_2",
+          "type": "MASK",
+          "links": [
+            8
+          ]
+        }
+      ],
+      "title": "Auto Mask (draft masks)",
+      "properties": {
+        "Node name for S&R": "SnapRefRegionAutoMask"
+      },
+      "widgets_values": [
+        "hakushi_anima_gt_v1"
+      ],
+      "widgets_values_named": {
+        "weights": "hakushi_anima_gt_v1"
+      }
+    },
+    {
+      "id": 96,
+      "type": "SnapRefRegionAutoMaskPanel",
+      "pos": [
+        1860,
+        1407.9998636245728
+      ],
+      "size": [
+        420,
+        200
+      ],
+      "flags": {},
+      "order": 27,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "probe_image",
+          "name": "probe_image",
+          "type": "IMAGE",
+          "link": 29
+        },
+        {
+          "localized_name": "final_image",
+          "name": "final_image",
+          "type": "IMAGE",
+          "link": 30
+        },
+        {
+          "localized_name": "mask_1",
+          "name": "mask_1",
+          "type": "MASK",
+          "link": 31
+        },
+        {
+          "localized_name": "mask_2",
+          "name": "mask_2",
+          "type": "MASK",
+          "link": 32
+        },
+        {
+          "localized_name": "caption",
+          "name": "caption",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "caption"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "panel",
+          "name": "panel",
+          "type": "IMAGE",
+          "links": [
+            20
+          ]
+        }
+      ],
+      "title": "Auto Mask Panel (check image)",
+      "properties": {
+        "Node name for S&R": "SnapRefRegionAutoMaskPanel"
+      },
+      "widgets_values": [
+        "seed 20261103504   1216x832   30 steps   hakushiMixAnima_v10.safetensors   refs snapref_region_mask_ref_A.png,snapref_region_mask_ref_B.png\nprompt: masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress\nauto mask: pass 1 4 steps, weights hakushi_anima_gt_v1, refined after 8 SnapRef steps"
+      ],
+      "widgets_values_named": {
+        "caption": "seed 20261103504   1216x832   30 steps   hakushiMixAnima_v10.safetensors   refs snapref_region_mask_ref_A.png,snapref_region_mask_ref_B.png\nprompt: masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress\nauto mask: pass 1 4 steps, weights hakushi_anima_gt_v1, refined after 8 SnapRef steps"
+      }
+    },
+    {
+      "id": 110,
+      "type": "SnapRefRegionProbe",
+      "pos": [
+        1240,
+        661.9999204363141
+      ],
+      "size": [
+        420,
+        296
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 33
+        },
+        {
+          "localized_name": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 34
+        },
+        {
+          "localized_name": "continue_from",
+          "name": "continue_from",
+          "shape": 7,
+          "type": "REGION_PROBE",
+          "link": null
+        },
+        {
+          "localized_name": "text",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "person_1",
+          "name": "person_1",
+          "type": "STRING",
+          "widget": {
+            "name": "person_1"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "person_2",
+          "name": "person_2",
+          "type": "STRING",
+          "widget": {
+            "name": "person_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "block_weights",
+          "name": "block_weights",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "block_weights"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "dump_path",
+          "name": "dump_path",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "dump_path"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "auto_mask",
+          "name": "auto_mask",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "auto_mask"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "step_offset",
+          "name": "step_offset",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "step_offset"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "total_steps",
+          "name": "total_steps",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "total_steps"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "モデル",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            37
+          ]
+        },
+        {
+          "localized_name": "REGION_PROBE",
+          "name": "REGION_PROBE",
+          "type": "REGION_PROBE",
+          "links": [
+            51
+          ]
+        }
+      ],
+      "title": "Region Probe (refine)",
+      "properties": {
+        "Node name for S&R": "SnapRefRegionProbe"
+      },
+      "widgets_values": [
+        "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+        "girl on the left",
+        "girl on the right",
+        "none",
+        "",
+        "hakushi_anima_gt_v1",
+        0,
+        0
+      ],
+      "widgets_values_named": {
+        "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+        "person_1": "girl on the left",
+        "person_2": "girl on the right",
+        "block_weights": "none",
+        "dump_path": "",
+        "auto_mask": "hakushi_anima_gt_v1",
+        "step_offset": 0,
+        "total_steps": 0
+      }
+    },
+    {
+      "id": 111,
+      "type": "BasicScheduler",
+      "pos": [
+        1240,
+        1167.9998534066335
+      ],
+      "size": [
+        420,
+        106
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "モデル",
+          "name": "model",
+          "type": "MODEL",
+          "link": 35
+        },
+        {
+          "localized_name": "スケジューラ",
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ステップ",
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ノイズ除去",
+          "name": "denoise",
+          "type": "FLOAT",
+          "widget": {
+            "name": "denoise"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "シグマ",
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [
+            36
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": [
+        "simple",
+        30,
+        1
+      ],
+      "widgets_values_named": {
+        "scheduler": "simple",
+        "steps": 30,
+        "denoise": 1
+      }
+    },
+    {
+      "id": 112,
+      "type": "SplitSigmas",
+      "pos": [
+        1240,
+        1405.9997122628347
+      ],
+      "size": [
+        420,
+        78
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "シグマ",
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 36
+        },
+        {
+          "localized_name": "ステップ",
+          "name": "step",
+          "type": "INT",
+          "widget": {
+            "name": "step"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "高シグマ",
+          "name": "high_sigmas",
+          "type": "SIGMAS",
+          "links": [
+            43
+          ]
+        },
+        {
+          "localized_name": "低シグマ",
+          "name": "low_sigmas",
+          "type": "SIGMAS",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SplitSigmas"
+      },
+      "widgets_values": [
+        8
+      ],
+      "widgets_values_named": {
+        "step": 8
+      }
+    },
+    {
+      "id": 113,
+      "type": "KSamplerSelect",
+      "pos": [
+        1240,
+        1607.9998077665055
+      ],
+      "size": [
+        420,
+        58
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "サンプラー名",
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "サンプラー",
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            42
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "er_sde"
+      ],
+      "widgets_values_named": {
+        "sampler_name": "er_sde"
+      }
+    },
+    {
+      "id": 114,
+      "type": "RandomNoise",
+      "pos": [
+        1240,
+        1789.9997724805557
+      ],
+      "size": [
+        420,
+        82
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "ノイズシード",
+          "name": "noise_seed",
+          "type": "INT",
+          "widget": {
+            "name": "noise_seed"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "ノイズ",
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            40
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        20261103504,
+        "fixed"
+      ],
+      "widgets_values_named": {
+        "noise_seed": 20261103504,
+        "control_after_generate": "fixed"
+      }
+    },
+    {
+      "id": 115,
+      "type": "CFGGuider",
+      "pos": [
+        1240,
+        1991.9997106279643
+      ],
+      "size": [
+        420,
+        98
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "モデル",
+          "name": "model",
+          "type": "MODEL",
+          "link": 37
+        },
+        {
+          "localized_name": "ポジティブ",
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 38
+        },
+        {
+          "localized_name": "ネガティブ",
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 39
+        },
+        {
+          "localized_name": "cfg",
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "ガイダー",
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [
+            41
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CFGGuider"
+      },
+      "widgets_values": [
+        4
+      ],
+      "widgets_values_named": {
+        "cfg": 4
+      }
+    },
+    {
+      "id": 116,
+      "type": "SamplerCustomAdvanced",
+      "pos": [
+        1240,
+        2213.9996147155757
+      ],
+      "size": [
+        420,
+        106
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "ノイズ",
+          "name": "noise",
+          "type": "NOISE",
+          "link": 40
+        },
+        {
+          "localized_name": "ガイダー",
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 41
+        },
+        {
+          "localized_name": "サンプラー",
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 42
+        },
+        {
+          "localized_name": "シグマ",
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 43
+        },
+        {
+          "localized_name": "潜在イメージ",
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 44
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "出力",
+          "name": "output",
+          "type": "LATENT",
+          "links": null
+        },
+        {
+          "localized_name": "ノイズ除去出力",
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": [
+            45
+          ]
+        }
+      ],
+      "title": "Refine: SnapRef steps 0-8",
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      }
+    },
+    {
+      "id": 117,
+      "type": "VAEDecode",
+      "pos": [
+        1240,
+        2447.99959727696
+      ],
+      "size": [
+        420,
+        46
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "サンプル",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 45
+        },
+        {
+          "localized_name": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 46
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "画像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            29,
+            50
+          ]
+        }
+      ],
+      "title": "VAE Decode (x0 at step 8)",
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 118,
+      "type": "SnapRefRegionMask",
+      "pos": [
+        1860,
+        80
+      ],
+      "size": [
+        420,
+        386
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 47
+        },
+        {
+          "localized_name": "mask_1",
+          "name": "mask_1",
+          "shape": 7,
+          "type": "MASK",
+          "link": 48
+        },
+        {
+          "localized_name": "mask_2",
+          "name": "mask_2",
+          "shape": 7,
+          "type": "MASK",
+          "link": 49
+        },
+        {
+          "localized_name": "layout",
+          "name": "layout",
+          "type": "COMBO",
+          "widget": {
+            "name": "layout"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "split",
+          "name": "split",
+          "type": "FLOAT",
+          "widget": {
+            "name": "split"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "feather",
+          "name": "feather",
+          "type": "FLOAT",
+          "widget": {
+            "name": "feather"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "outside_strength",
+          "name": "outside_strength",
+          "type": "FLOAT",
+          "widget": {
+            "name": "outside_strength"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_start",
+          "name": "ref_start",
+          "type": "FLOAT",
+          "widget": {
+            "name": "ref_start"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "x",
+          "name": "x",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "x"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "y",
+          "name": "y",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "y"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "width",
+          "name": "width",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height",
+          "name": "height",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "x_2",
+          "name": "x_2",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "x_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "y_2",
+          "name": "y_2",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "y_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "width_2",
+          "name": "width_2",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "width_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height_2",
+          "name": "height_2",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "height_2"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "モデル",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "title": "Region Mask (refined masks)",
+      "properties": {
+        "Node name for S&R": "SnapRefRegionMask"
+      },
+      "widgets_values": [
+        "left_right",
+        0.5,
+        0.05,
+        0,
+        0.1,
+        0,
+        0,
+        0.5,
+        1,
+        0.5,
+        0,
+        0,
+        1
+      ],
+      "widgets_values_named": {
+        "layout": "left_right",
+        "split": 0.5,
+        "feather": 0.05,
+        "outside_strength": 0,
+        "ref_start": 0.1,
+        "x": 0,
+        "y": 0,
+        "width": 0.5,
+        "height": 1,
+        "x_2": 0.5,
+        "y_2": 0,
+        "width_2": 0,
+        "height_2": 1
+      }
+    },
+    {
+      "id": 119,
+      "type": "SnapRefRegionAutoMask",
+      "pos": [
+        1240,
+        2621.999509675162
+      ],
+      "size": [
+        420,
+        78
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 50
+        },
+        {
+          "localized_name": "probe",
+          "name": "probe",
+          "type": "REGION_PROBE",
+          "link": 51
+        },
+        {
+          "localized_name": "weights",
+          "name": "weights",
+          "type": "COMBO",
+          "widget": {
+            "name": "weights"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "mask_1",
+          "name": "mask_1",
+          "type": "MASK",
+          "links": [
+            31,
+            48
+          ]
+        },
+        {
+          "localized_name": "mask_2",
+          "name": "mask_2",
+          "type": "MASK",
+          "links": [
+            32,
+            49
+          ]
+        }
+      ],
+      "title": "Auto Mask (refined masks)",
+      "properties": {
+        "Node name for S&R": "SnapRefRegionAutoMask"
+      },
+      "widgets_values": [
+        "hakushi_anima_gt_v1"
+      ],
+      "widgets_values_named": {
+        "weights": "hakushi_anima_gt_v1"
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      44,
+      0,
+      4,
+      0,
+      "MODEL"
+    ],
+    [
+      2,
+      45,
+      0,
+      4,
+      1,
+      "CLIP"
+    ],
+    [
+      3,
+      15,
+      0,
+      4,
+      2,
+      "VAE"
+    ],
+    [
+      4,
+      7,
+      0,
+      4,
+      3,
+      "IMAGE"
+    ],
+    [
+      5,
+      72,
+      0,
+      4,
+      4,
+      "IMAGE"
+    ],
+    [
+      6,
+      4,
+      0,
+      5,
+      0,
+      "MODEL"
+    ],
+    [
+      7,
+      95,
+      0,
+      5,
+      1,
+      "MASK"
+    ],
+    [
+      8,
+      95,
+      1,
+      5,
+      2,
+      "MASK"
+    ],
+    [
+      9,
+      19,
+      0,
+      8,
+      0,
+      "LATENT"
+    ],
+    [
+      10,
+      15,
+      0,
+      8,
+      1,
+      "VAE"
+    ],
+    [
+      11,
+      45,
+      0,
+      11,
+      0,
+      "CLIP"
+    ],
+    [
+      12,
+      45,
+      0,
+      12,
+      0,
+      "CLIP"
+    ],
+    [
+      13,
+      118,
+      0,
+      19,
+      0,
+      "MODEL"
+    ],
+    [
+      14,
+      11,
+      0,
+      19,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      15,
+      12,
+      0,
+      19,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      16,
+      28,
+      0,
+      19,
+      3,
+      "LATENT"
+    ],
+    [
+      17,
+      8,
+      0,
+      62,
+      0,
+      "IMAGE"
+    ],
+    [
+      18,
+      44,
+      0,
+      90,
+      0,
+      "MODEL"
+    ],
+    [
+      19,
+      45,
+      0,
+      90,
+      1,
+      "CLIP"
+    ],
+    [
+      20,
+      96,
+      0,
+      92,
+      0,
+      "IMAGE"
+    ],
+    [
+      21,
+      90,
+      0,
+      93,
+      0,
+      "MODEL"
+    ],
+    [
+      22,
+      11,
+      0,
+      93,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      23,
+      12,
+      0,
+      93,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      24,
+      28,
+      0,
+      93,
+      3,
+      "LATENT"
+    ],
+    [
+      25,
+      93,
+      0,
+      94,
+      0,
+      "LATENT"
+    ],
+    [
+      26,
+      15,
+      0,
+      94,
+      1,
+      "VAE"
+    ],
+    [
+      27,
+      94,
+      0,
+      95,
+      0,
+      "IMAGE"
+    ],
+    [
+      28,
+      90,
+      1,
+      95,
+      1,
+      "REGION_PROBE"
+    ],
+    [
+      29,
+      117,
+      0,
+      96,
+      0,
+      "IMAGE"
+    ],
+    [
+      30,
+      8,
+      0,
+      96,
+      1,
+      "IMAGE"
+    ],
+    [
+      31,
+      119,
+      0,
+      96,
+      2,
+      "MASK"
+    ],
+    [
+      32,
+      119,
+      1,
+      96,
+      3,
+      "MASK"
+    ],
+    [
+      33,
+      5,
+      0,
+      110,
+      0,
+      "MODEL"
+    ],
+    [
+      34,
+      45,
+      0,
+      110,
+      1,
+      "CLIP"
+    ],
+    [
+      35,
+      44,
+      0,
+      111,
+      0,
+      "MODEL"
+    ],
+    [
+      36,
+      111,
+      0,
+      112,
+      0,
+      "SIGMAS"
+    ],
+    [
+      37,
+      110,
+      0,
+      115,
+      0,
+      "MODEL"
+    ],
+    [
+      38,
+      11,
+      0,
+      115,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      39,
+      12,
+      0,
+      115,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      40,
+      114,
+      0,
+      116,
+      0,
+      "NOISE"
+    ],
+    [
+      41,
+      115,
+      0,
+      116,
+      1,
+      "GUIDER"
+    ],
+    [
+      42,
+      113,
+      0,
+      116,
+      2,
+      "SAMPLER"
+    ],
+    [
+      43,
+      112,
+      0,
+      116,
+      3,
+      "SIGMAS"
+    ],
+    [
+      44,
+      28,
+      0,
+      116,
+      4,
+      "LATENT"
+    ],
+    [
+      45,
+      116,
+      1,
+      117,
+      0,
+      "LATENT"
+    ],
+    [
+      46,
+      15,
+      0,
+      117,
+      1,
+      "VAE"
+    ],
+    [
+      47,
+      4,
+      0,
+      118,
+      0,
+      "MODEL"
+    ],
+    [
+      48,
+      119,
+      0,
+      118,
+      1,
+      "MASK"
+    ],
+    [
+      49,
+      119,
+      1,
+      118,
+      2,
+      "MASK"
+    ],
+    [
+      50,
+      117,
+      0,
+      119,
+      0,
+      "IMAGE"
+    ],
+    [
+      51,
+      110,
+      1,
+      119,
+      1,
+      "REGION_PROBE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "1. Draft: masks from a short pass without SnapRef",
+      "bounding": [
+        590,
+        0,
+        480,
+        1439.999668257577
+      ],
+      "color": "#3f789e",
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "2. Refine: SnapRef reads the draft masks for 8 steps, masks estimated again",
+      "bounding": [
+        1210,
+        0,
+        480,
+        2847.9994399206976
+      ],
+      "color": "#3f789e",
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "3. Final: unsegmented SnapRef generation with the refined masks",
+      "bounding": [
+        1830,
+        0,
+        480,
+        1917.9998711177282
+      ],
+      "color": "#3f789e",
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.5,
+      "offset": [
+        60,
+        60
+      ]
+    }
+  },
+  "version": 0.4
+}
