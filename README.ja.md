@@ -32,6 +32,7 @@ ComfyUIを再起動し、SnapRefのMODEL出力とKSamplerの間に **SnapRef →
 | `snapref_region_mask_sample_boxes.json` | Aを左、Bを右に配置 | `sample_boxes_output.png` |
 | `snapref_region_mask_sample_masks.json` | MASKでCを上、Dを下に配置 | `sample_masks_output.png` |
 | `snapref_region_mask_sample_arcade.json` | 参照を左右交換：Bが左で△口、Aが右側の筐体を操作。boxで筐体を参照領域から除外 | `sample_arcade_output.png` |
+| `snapref_region_mask_sample_auto_api.json`（APIのみ） | カフェのプロンプトを、固定の左右分割ではなく自動マスクで生成（人物語 `girl on the left` / `girl on the right`） | `sample_auto_output.png`、`sample_auto_regions.png` |
 
 `*_api.json` はAPI形式です。出力PNGにもワークフローを埋め込んでいます。Region Maskノードをバイパス（Ctrl+B）すると、同条件でノードなしの結果を比較できます。
 
@@ -81,7 +82,7 @@ MASKはモデルのトークン格子に合わせてリサイズされます。3
 
 制約:
 
-- 同梱の重み `hakushi_anima_gt_v1` は、hakushiMixAnima v1.0 で人物語 `1girl | girl` と `1man | man` を使って学習しました（手で確認した29枚。下書きで、人物の画素の3〜4%が相手側になる程度）。ほかの人物語にはまだ効きません。2人の女の子を髪や服の語で区別すると、人物1にはその語の部分しか付かず、体の大半が人物2になります。
+- 同梱の重み `hakushi_anima_gt_v1` は、hakushiMixAnima v1.0 で人物語 `1girl | girl` と `1man | man` を使って学習しました（手で確認した29枚。下書きで、人物の画素の3〜4%が相手側になる程度）。位置の語（`girl on the left` / `girl on the right`、女の子2人）でも、カフェの例では推定できました。髪や服の語で区別すると効かず、人物1にはその語の部分しか付かず、体の大半が人物2になります。
 - マスクが制限するのは、各参照を読む範囲だけです。プロンプトの語や、画像トークンどうしの自己注意は、両方の人物に届きます。
 
 ## 使用上の注意

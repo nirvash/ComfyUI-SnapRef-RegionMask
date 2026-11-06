@@ -1,0 +1,442 @@
+{
+  "44": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "hakushiMixAnima_v10.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "45": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_06b_base.safetensors",
+      "type": "stable_diffusion",
+      "device": "default"
+    }
+  },
+  "15": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "11": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "45",
+        0
+      ],
+      "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress"
+    }
+  },
+  "12": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "45",
+        0
+      ],
+      "text": "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, extra limbs, bad anatomy, bad hands, fused bodies, extra person"
+    }
+  },
+  "28": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 1216,
+      "height": 832,
+      "batch_size": 1
+    }
+  },
+  "19": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "118",
+        0
+      ],
+      "positive": [
+        "11",
+        0
+      ],
+      "negative": [
+        "12",
+        0
+      ],
+      "latent_image": [
+        "28",
+        0
+      ],
+      "seed": 20261103504,
+      "steps": 30,
+      "cfg": 4.0,
+      "sampler_name": "er_sde",
+      "scheduler": "simple",
+      "denoise": 1.0
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "19",
+        0
+      ],
+      "vae": [
+        "15",
+        0
+      ]
+    }
+  },
+  "62": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "8",
+        0
+      ],
+      "filename_prefix": "snapref_region_auto_mask_output"
+    }
+  },
+  "7": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_A.png"
+    }
+  },
+  "72": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_B.png"
+    }
+  },
+  "4": {
+    "class_type": "SnapRef",
+    "inputs": {
+      "model": [
+        "44",
+        0
+      ],
+      "clip": [
+        "45",
+        0
+      ],
+      "vae": [
+        "15",
+        0
+      ],
+      "image": [
+        "7",
+        0
+      ],
+      "adapter": "snapref_v2a_pre2.safetensors",
+      "mode": "cs",
+      "ref_in_uncond": false,
+      "ref_megapixels": 1.0,
+      "strength": 0.0,
+      "ref_caption": "",
+      "ref_guidance_on": false,
+      "correction": "apg",
+      "ref_end": 1.0,
+      "use_batch": false,
+      "multi_layout": "separate",
+      "weight_1": 1.0,
+      "weight_2": 1.0,
+      "weight_3": 1.0,
+      "fidelity": 1.0,
+      "image_2": [
+        "72",
+        0
+      ]
+    }
+  },
+  "5": {
+    "class_type": "SnapRefRegionMask",
+    "inputs": {
+      "layout": "left_right",
+      "split": 0.5,
+      "feather": 0.05,
+      "outside_strength": 0,
+      "ref_start": 0.3125,
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.5,
+      "height": 1.0,
+      "x_2": 0.5,
+      "y_2": 0.0,
+      "width_2": 0.0,
+      "height_2": 1.0,
+      "model": [
+        "4",
+        0
+      ],
+      "mask_1": [
+        "95",
+        0
+      ],
+      "mask_2": [
+        "95",
+        1
+      ]
+    }
+  },
+  "90": {
+    "class_type": "SnapRefRegionProbe",
+    "inputs": {
+      "model": [
+        "44",
+        0
+      ],
+      "clip": [
+        "45",
+        0
+      ],
+      "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+      "person_1": "girl on the left",
+      "person_2": "girl on the right",
+      "block_weights": "none",
+      "auto_mask": "hakushi_anima_gt_v1"
+    }
+  },
+  "93": {
+    "class_type": "KSamplerAdvanced",
+    "inputs": {
+      "model": [
+        "90",
+        0
+      ],
+      "add_noise": "enable",
+      "noise_seed": 20261103504,
+      "steps": 30,
+      "cfg": 4.0,
+      "sampler_name": "er_sde",
+      "scheduler": "simple",
+      "positive": [
+        "11",
+        0
+      ],
+      "negative": [
+        "12",
+        0
+      ],
+      "latent_image": [
+        "28",
+        0
+      ],
+      "start_at_step": 0,
+      "end_at_step": 4,
+      "return_with_leftover_noise": "disable"
+    }
+  },
+  "94": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "93",
+        0
+      ],
+      "vae": [
+        "15",
+        0
+      ]
+    }
+  },
+  "95": {
+    "class_type": "SnapRefRegionAutoMask",
+    "inputs": {
+      "image": [
+        "94",
+        0
+      ],
+      "probe": [
+        "90",
+        1
+      ],
+      "weights": "hakushi_anima_gt_v1"
+    }
+  },
+  "110": {
+    "class_type": "SnapRefRegionProbe",
+    "inputs": {
+      "model": [
+        "5",
+        0
+      ],
+      "clip": [
+        "45",
+        0
+      ],
+      "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+      "person_1": "girl on the left",
+      "person_2": "girl on the right",
+      "block_weights": "none",
+      "auto_mask": "hakushi_anima_gt_v1"
+    }
+  },
+  "111": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "44",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 30,
+      "denoise": 1.0
+    }
+  },
+  "112": {
+    "class_type": "SplitSigmas",
+    "inputs": {
+      "sigmas": [
+        "111",
+        0
+      ],
+      "step": 8
+    }
+  },
+  "113": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "er_sde"
+    }
+  },
+  "114": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 20261103504
+    }
+  },
+  "115": {
+    "class_type": "CFGGuider",
+    "inputs": {
+      "model": [
+        "110",
+        0
+      ],
+      "positive": [
+        "11",
+        0
+      ],
+      "negative": [
+        "12",
+        0
+      ],
+      "cfg": 4.0
+    }
+  },
+  "116": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "114",
+        0
+      ],
+      "guider": [
+        "115",
+        0
+      ],
+      "sampler": [
+        "113",
+        0
+      ],
+      "sigmas": [
+        "112",
+        0
+      ],
+      "latent_image": [
+        "28",
+        0
+      ]
+    }
+  },
+  "117": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "116",
+        1
+      ],
+      "vae": [
+        "15",
+        0
+      ]
+    }
+  },
+  "119": {
+    "class_type": "SnapRefRegionAutoMask",
+    "inputs": {
+      "image": [
+        "117",
+        0
+      ],
+      "probe": [
+        "110",
+        1
+      ],
+      "weights": "hakushi_anima_gt_v1"
+    }
+  },
+  "118": {
+    "class_type": "SnapRefRegionMask",
+    "inputs": {
+      "layout": "left_right",
+      "split": 0.5,
+      "feather": 0.05,
+      "outside_strength": 0,
+      "ref_start": 0.1,
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.5,
+      "height": 1.0,
+      "x_2": 0.5,
+      "y_2": 0.0,
+      "width_2": 0.0,
+      "height_2": 1.0,
+      "model": [
+        "4",
+        0
+      ],
+      "mask_1": [
+        "119",
+        0
+      ],
+      "mask_2": [
+        "119",
+        1
+      ]
+    }
+  },
+  "96": {
+    "class_type": "SnapRefRegionAutoMaskPanel",
+    "inputs": {
+      "probe_image": [
+        "117",
+        0
+      ],
+      "final_image": [
+        "8",
+        0
+      ],
+      "mask_1": [
+        "119",
+        0
+      ],
+      "mask_2": [
+        "119",
+        1
+      ],
+      "caption": "seed 20261103504   1216x832   30 steps   hakushiMixAnima_v10.safetensors   refs snapref_region_mask_ref_A.png,snapref_region_mask_ref_B.png\nprompt: masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress\nauto mask: pass 1 4 steps, weights hakushi_anima_gt_v1, refined after 8 SnapRef steps"
+    }
+  },
+  "92": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "96",
+        0
+      ],
+      "filename_prefix": "snapref_region_auto_mask_panel"
+    }
+  }
+}

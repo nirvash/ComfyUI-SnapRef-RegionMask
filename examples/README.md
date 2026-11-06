@@ -9,6 +9,7 @@
 | [カフェ](#カフェ左右分割) | A＝左、B＝右 | 左右分割 | [UI](snapref_region_mask_sample_boxes.json) / [API](snapref_region_mask_sample_boxes_api.json) |
 | [木の上と下](#木の上と下上下mask) | C＝上、D＝下 | 上下のMASK | [UI](snapref_region_mask_sample_masks.json) / [API](snapref_region_mask_sample_masks_api.json) |
 | [クレーンゲーム](#クレーンゲーム左右交換box) | B＝左、A＝右 | 人物ごとのbox | [UI](snapref_region_mask_sample_arcade.json) / [API](snapref_region_mask_sample_arcade_api.json) |
+| [カフェ（自動マスク）](#カフェ自動マスク) | A＝左、B＝右 | 自動マスク | [API](snapref_region_mask_sample_auto_api.json) |
 
 ## カフェ：左右分割
 
@@ -45,6 +46,20 @@
 `layout = boxes`。Bの領域は `x = 0, y = 0, width = 0.32, height = 1`、Aは `x_2 = 0.32, y_2 = 0, width_2 = 0.43, height_2 = 1`。右端25%の筐体部分を参照領域から外します。`feather = 0.03` で境界をぼかしています。人物以外の広い空間がある場面の指定例です。
 
 [生成画像](sample_arcade_output.png) · [ワークフロー](snapref_region_mask_sample_arcade.json) · [正確なプロンプト・設定（API JSON）](snapref_region_mask_sample_arcade_api.json)
+
+## カフェ：自動マスク
+
+![自動マスクで生成したカフェ：左のAがスマホでパフェを撮影し、右のBが笑う](sample_auto_output.png)
+
+**プロンプトの内容：** [カフェ](#カフェ左右分割)と同じプロンプト・seed です。領域は描かず、SnapRef Region Probe と SnapRef Region Auto Mask で推定したマスクを使います。人物語は `person_1 = girl on the left`、`person_2 = girl on the right` です。
+
+構成は README の「自動マスク」の3段です。SnapRef なしの 4 step の下書きでマスクを作り、そのマスクで SnapRef ありの 8 step を描いて推定し直し、最後に通常の 30 step を生成します。
+
+![推定した領域：左は推定し直しに使った 8 step 時点の画像、右は最終画像。赤＝参照1（A）、青＝参照2（B）](sample_auto_regions.png)
+
+左の子の顔と体は参照1（赤）、右の子は参照2（青）になっています。左の子のベレー帽と頭頂部は青側に入っており、推定は完全ではありません。
+
+[生成画像](sample_auto_output.png) · [推定した領域](sample_auto_regions.png) · [正確なプロンプト・設定（API JSON）](snapref_region_mask_sample_auto_api.json)
 
 ## 参照画像
 

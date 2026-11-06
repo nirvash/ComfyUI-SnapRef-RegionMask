@@ -32,6 +32,7 @@ Copy images from `examples/input` to `ComfyUI/input`, open a workflow JSON in Co
 | `snapref_region_mask_sample_boxes.json` | A on the left, B on the right | `sample_boxes_output.png` |
 | `snapref_region_mask_sample_masks.json` | C above, D below, using MASKs | `sample_masks_output.png` |
 | `snapref_region_mask_sample_arcade.json` | Swapped references: B left with a triangle mouth, A operating on the right; boxes exclude the machine from reference regions | `sample_arcade_output.png` |
+| `snapref_region_mask_sample_auto_api.json` (API only) | The cafe prompt with automatic masks instead of a fixed split (person terms `girl on the left` / `girl on the right`) | `sample_auto_output.png`, `sample_auto_regions.png` |
 
 `*_api.json` files are API graphs. Output PNGs also contain their editing workflows. Bypass Region Mask (Ctrl+B) to compare against SnapRef alone with the same settings.
 
@@ -81,7 +82,7 @@ The refine stage reads the references, so its composition matches the final stag
 
 Limits:
 
-- The bundled weights `hakushi_anima_gt_v1` were fitted on hakushiMixAnima v1.0 with the person terms `1girl | girl` and `1man | man` (29 hand-checked images; on drafts 3–4% of the person pixels are given to the other person). Other terms do not work yet: with two girls told apart by hair or clothing words, person 1 gets only the named items and most of the body goes to person 2.
+- The bundled weights `hakushi_anima_gt_v1` were fitted on hakushiMixAnima v1.0 with the person terms `1girl | girl` and `1man | man` (29 hand-checked images; on drafts 3–4% of the person pixels are given to the other person). Position words also worked in the cafe example (`girl on the left` / `girl on the right`, two girls). Hair or clothing words do not: person 1 gets only the named items and most of the body goes to person 2.
 - The masks only limit where each reference is read. Words in the prompt and self-attention between image tokens still reach both people.
 
 ## Notes
