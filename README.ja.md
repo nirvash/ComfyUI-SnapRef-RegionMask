@@ -61,6 +61,29 @@ MASKはモデルのトークン格子に合わせてリサイズされます。3
 
 人物が画面の一部に寄る場面では、`boxes`で人物の範囲だけを指定し、筐体などを参照領域から外せます。
 
+## 自動マスク（試験的）
+
+構図を指定しないプロンプト向けに、領域を手で描く代わりに、生成そのものから人物ごとの領域を推定します。
+
+| ノード | 役割 |
+|---|---|
+| SnapRef Region Probe | MODEL → MODEL, REGION_PROBE。画像トークンがプロンプト中の2人の人物語にどう注目したかを記録します（`person_1` は SnapRef の `image`、`person_2` は `image_2` に対応。言い換えは `\|` 区切り）。`auto_mask` に重みの名前を指定し、モデルの流れの最後に置きます |
+| SnapRef Region Auto Mask | IMAGE + REGION_PROBE → SnapRef Region Mask 用の `mask_1`、`mask_2`。ブロックごとの学習済み重み、トークン特徴の部品分け、superpixel の多数決で推定します。GPU で約0.1秒 |
+| SnapRef Region Auto Mask Panel | 推定に使った画像と最終画像に領域を重ねた確認用の画像を作ります |
+
+推奨構成（すべての段で seed・sampler・scheduler・CFG を揃え、30 step）:
+
+1. **下書き**: モデル → Region Probe → KSamplerAdvanced で 0〜4 step（`return_with_leftover_noise = disable`）→ VAEDecode → Auto Mask → マスク M4
+2. **推定し直し**: SnapRef → Region Mask（M4）→ Region Probe → SamplerCustomAdvanced で 30 step スケジュールの最初の 8 step（BasicScheduler → SplitSigmas を 8 で分割）→ `denoised_output` を VAEDecode → Auto Mask → マスク M8。Region Mask は 8 step の区間の中で進み具合を数えるので、`ref_start = 0.3125` にして、30 step の `0.1` と同じく 0〜2 step を参照なしにします
+3. **本番**: SnapRef → Region Mask（M8、`ref_start = 0.1`）→ KSampler で 30 step
+
+推定し直しの段でも参照を読むので、構図が本番とそろいます。下書きだけのマスクは、SnapRef で構図が変わるとずれます。1〜2段目で、832×1216 なら約5〜6秒増えます。
+
+制約:
+
+- 同梱の重み `hakushi_anima_gt_v1` は、hakushiMixAnima v1.0 で人物語 `1girl | girl` と `1man | man` を使って学習しました（手で確認した29枚。下書きで、人物の画素の3〜4%が相手側になる程度）。ほかの人物語にはまだ効きません。2人の女の子を髪や服の語で区別すると、人物1にはその語の部分しか付かず、体の大半が人物2になります。
+- マスクが制限するのは、各参照を読む範囲だけです。プロンプトの語や、画像トークンどうしの自己注意は、両方の人物に届きます。
+
 ## 使用上の注意
 
 - 人物の位置と髪・目・服をプロンプトで簡潔に補足してください。SnapRefの `strength` は既定値の0で検証しています。

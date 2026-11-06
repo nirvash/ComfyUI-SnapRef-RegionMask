@@ -19,7 +19,7 @@ import math
 import torch
 import comfy.patcher_extension
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 KEY = "snapref_region_mask"
 OUTER_KEY = "snapref_region_mask_outer"
@@ -275,5 +275,21 @@ class SnapRefRegionMask:
         return (m,)
 
 
-NODE_CLASS_MAPPINGS = {"SnapRefRegionMask": SnapRefRegionMask}
-NODE_DISPLAY_NAME_MAPPINGS = {"SnapRefRegionMask": "SnapRef Region Mask"}
+def _load_probe():
+    """region_probe.py as a package submodule inside ComfyUI, or by path when this file is loaded alone (tests)."""
+    try:
+        from . import region_probe
+        return region_probe
+    except ImportError:
+        import importlib.util
+        import os
+        spec = importlib.util.spec_from_file_location(
+            "snapref_region_probe", os.path.join(os.path.dirname(os.path.abspath(__file__)), "region_probe.py"))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+
+_probe = _load_probe()
+NODE_CLASS_MAPPINGS = {"SnapRefRegionMask": SnapRefRegionMask, **_probe.NODE_CLASS_MAPPINGS}
+NODE_DISPLAY_NAME_MAPPINGS = {"SnapRefRegionMask": "SnapRef Region Mask", **_probe.NODE_DISPLAY_NAME_MAPPINGS}

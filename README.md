@@ -61,6 +61,29 @@ MASKs are resized to the model's token grid. A third reference (`image_3`) uses 
 
 When characters occupy only part of the canvas, use `boxes` to limit references to their regions and leave objects such as the machine outside them.
 
+## Automatic masks (experimental)
+
+Instead of drawing regions, estimate each person's region from the generation itself, for prompts that do not fix the composition.
+
+| Node | Role |
+|---|---|
+| SnapRef Region Probe | MODEL → MODEL, REGION_PROBE. Records how image tokens attend to two person terms of the prompt (`person_1` for SnapRef `image`, `person_2` for `image_2`; variants separated by `\|`). Set `auto_mask` to the weights name. Put it last in the model chain |
+| SnapRef Region Auto Mask | IMAGE + REGION_PROBE → `mask_1`, `mask_2` for SnapRef Region Mask. Learned per-block weights, token-feature parts and a superpixel vote; about 0.1 s on the GPU |
+| SnapRef Region Auto Mask Panel | Draws the regions over the estimation image and the final image, for checking |
+
+Recommended graph (same seed, sampler, scheduler and CFG in every stage, 30 steps):
+
+1. **Draft**: model → Region Probe → KSamplerAdvanced steps 0–4 (`return_with_leftover_noise = disable`) → VAEDecode → Auto Mask → masks M4.
+2. **Refine**: SnapRef → Region Mask (M4) → Region Probe → SamplerCustomAdvanced with the first 8 steps of the 30-step schedule (BasicScheduler → SplitSigmas at 8) → VAEDecode of `denoised_output` → Auto Mask → masks M8. Region Mask counts progress inside the 8-step segment, so use `ref_start = 0.3125` to keep steps 0–2 without references as `0.1` does over 30 steps.
+3. **Final**: SnapRef → Region Mask (M8, `ref_start = 0.1`) → KSampler, 30 steps.
+
+The refine stage reads the references, so its composition matches the final stage; a mask from the draft alone drifts when SnapRef changes the layout. Stages 1–2 add about 5–6 s at 832×1216.
+
+Limits:
+
+- The bundled weights `hakushi_anima_gt_v1` were fitted on hakushiMixAnima v1.0 with the person terms `1girl | girl` and `1man | man` (29 hand-checked images; on drafts 3–4% of the person pixels are given to the other person). Other terms do not work yet: with two girls told apart by hair or clothing words, person 1 gets only the named items and most of the body goes to person 2.
+- The masks only limit where each reference is read. Words in the prompt and self-attention between image tokens still reach both people.
+
 ## Notes
 
 - Briefly describe each character's position, hair, eyes and clothing in the prompt. Examples were tested with SnapRef `strength = 0` (the default).
