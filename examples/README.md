@@ -9,7 +9,7 @@
 | [カフェ](#カフェ左右分割) | A＝左、B＝右 | 左右分割 | [UI](snapref_region_mask_sample_boxes.json) / [API](snapref_region_mask_sample_boxes_api.json) |
 | [木の上と下](#木の上と下上下mask) | C＝上、D＝下 | 上下のMASK | [UI](snapref_region_mask_sample_masks.json) / [API](snapref_region_mask_sample_masks_api.json) |
 | [クレーンゲーム](#クレーンゲーム左右交換box) | B＝左、A＝右 | 人物ごとのbox | [UI](snapref_region_mask_sample_arcade.json) / [API](snapref_region_mask_sample_arcade_api.json) |
-| [ピクニック（自動マスク）](#ピクニック自動マスク) | C＝左、D＝右 | 自動マスク | [UI](snapref_region_mask_sample_auto.json) / [API](snapref_region_mask_sample_auto_api.json) |
+| [膝枕（交差構図・自動マスク）](#膝枕交差構図自動マスク) | C＝寝ている側、D＝座っている側 | 自動マスク（2段推定） | [UI](snapref_region_mask_sample_auto.json) / [API](snapref_region_mask_sample_auto_api.json) |
 
 ## カフェ：左右分割
 
@@ -47,19 +47,24 @@
 
 [生成画像](sample_arcade_output.png) · [ワークフロー](snapref_region_mask_sample_arcade.json) · [正確なプロンプト・設定（API JSON）](snapref_region_mask_sample_arcade_api.json)
 
-## ピクニック：自動マスク
+## 膝枕（交差構図・自動マスク）
 
-![自動マスクで生成したピクニック：左のCがサンドイッチを持ち、右のDが水筒からお茶を注ぐ](sample_auto_output.png)
+![自動マスクで生成した膝枕：左のCが右のDの膝の上に頭を載せて横たわる交差構図](sample_auto_output.png)
 
-**プロンプトの内容：** 晴れた公園で、レジャーシートに並んで座る2人。左のCはサンドイッチを持って笑い、右のDは水筒からお茶を注ぎます。容姿の補足は、Cにピンクのお団子髪・青い目・うさ耳フード付き水色パーカー・白プリーツスカート、Dに短いオレンジ髪・緑の髪留めと目・白Tシャツ・オレンジのオーバーオールワンピースです。
+**プロンプトの内容：** 午後の日差しが入るリビングのソファで膝枕をする2人。右側に座ったD（sitting girl）がソファに座って横たわるC（lying girl）の髪を優しく撫で、左側から寝転んだCはDの膝の上に頭を預けて目を閉じて微笑みます。容姿の補足は、Cにピンクのお団子髪・うさ耳フード付き水色パーカー・白プリーツスカート、Dに短いオレンジ髪・緑の髪留めと目・白Tシャツ・オレンジのオーバーオールワンピースです。
 
-領域は描かず、SnapRef Region Probe と SnapRef Region Auto Mask で推定したマスクを使います。人物語は `person_1 = girl on the left`、`person_2 = girl on the right` です。構成は README の「自動マスク」の3段です。SnapRef なしの 4 step の下書きでマスクを作り、そのマスクで SnapRef ありの 8 step を描いて推定し直し、最後に通常の 30 step を生成します。推定し直しは `source = both` で、体は人物語への注目で決め、うさ耳フードなどは参照への類似度で足しています。
+**なぜ自動マスクが必要か（交差構図）：**
+膝枕では、寝ている側の頭部が反対側（座っている側の膝の上）へ深く越境します。そのため、単純な左右二分割（`left_right`）や矩形ボックス（`boxes`）では頭部の領域を絶対に正しく切り分けられず、頭部に座っている側の特徴が混ざってしまいます。自動マスク（SnapRef Region Auto Mask）はブロック16の自己注意スペクトル解析（`instance_mask`）によって頭部と身体の一体性を保ちつつ、超解像グラフカット最小カットと越境頭部引き込みにより、こうした交差構図でも高精度に領域を分離します。
 
-![推定した領域を最終画像に重ねたもの。赤＝参照1（C）、青＝参照2（D）](sample_auto_regions.png)
+構成は最新の2段構成です：
+1. **推定（8 steps）**：SnapRef なしで 30 step スケジュールの 0〜8 step を生成し、人物語（`person_1 = lying girl`、`person_2 = sitting girl`）への注目と自己注意からマスクを推定（約 0.04 秒）。
+2. **本番（30 steps）**：推定されたマスクを SnapRef Region Mask に渡し、同じ seed で通常の 30 step SnapRef 生成を行います。
 
-左の子はうさ耳フードまで参照1（赤）、右の子は参照2（青）になっています。背景の一部も赤に入っていますが、人物どうしの取り違えはありません。
+![推定した領域を最終画像に重ねたもの。赤＝参照1（C: lying girl）、青＝参照2（D: sitting girl）](sample_auto_regions.png)
 
-ワークフローは「1. 下書き」「2. 推定し直し」「3. 本番」の3グループです。Region Probe の `text` はプロンプトと同じ文にしておく必要があるので、プロンプトを変えたら2つの Probe にも貼り付けてください。
+寝ている少女の身体から膝の上にある頭部・うさ耳フードまでが一体として参照1（赤）に正しく割り当てられ、座っている側の身体・膝が参照2（青）として綺麗に分離されています。
+
+ワークフローは「1. 推定（8 steps）」「2. 本番（30 steps）」の2グループです。Region Probe の `text` はプロンプトと同じ文にしておく必要があるので、プロンプトを変えたら Probe の `text` にも貼り付けてください。
 
 [生成画像](sample_auto_output.png) · [推定した領域](sample_auto_regions.png) · [ワークフロー](snapref_region_mask_sample_auto.json) · [正確なプロンプト・設定（API JSON）](snapref_region_mask_sample_auto_api.json)
 

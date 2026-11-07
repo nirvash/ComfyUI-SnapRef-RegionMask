@@ -10,7 +10,7 @@ Assign a region to each [SnapRef](https://github.com/ArcAnima/SnapRef) reference
 
 ![Chibi characters in left/right and top/bottom layouts](docs/chibi.png)
 
-![Automatic masks. Top: references C and D. Bottom: the estimated regions over the final image, and the final image](docs/auto_mask.png)
+![Automatic masks (crossing composition: lap pillow). Top: references C and D. Bottom: estimated regions over final image, and final image](docs/auto_mask.png)
 
 ## Install and use
 

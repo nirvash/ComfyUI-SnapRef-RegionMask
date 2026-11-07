@@ -27,7 +27,7 @@
         "45",
         0
       ],
-      "text": "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
+      "text": "masterpiece, best quality, 2girls, living room, sofa, afternoon sunlight, lap pillow, the sitting girl sits on the sofa and gently strokes the lying girl's hair, the lying girl lies on the sofa with her head resting on the sitting girl's lap and smiles with her eyes closed, the lying girl has pink hair in twin buns and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the sitting girl has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
     }
   },
   "12": {
@@ -48,11 +48,179 @@
       "batch_size": 1
     }
   },
+  "7": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_C.png"
+    }
+  },
+  "72": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "snapref_region_mask_ref_D.png"
+    }
+  },
+  "90": {
+    "class_type": "SnapRefRegionProbe",
+    "inputs": {
+      "model": [
+        "44",
+        0
+      ],
+      "clip": [
+        "45",
+        0
+      ],
+      "text": "masterpiece, best quality, 2girls, living room, sofa, afternoon sunlight, lap pillow, the sitting girl sits on the sofa and gently strokes the lying girl's hair, the lying girl lies on the sofa with her head resting on the sitting girl's lap and smiles with her eyes closed, the lying girl has pink hair in twin buns and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the sitting girl has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
+      "person_1": "lying girl",
+      "person_2": "sitting girl",
+      "block_weights": "none",
+      "dump_path": "",
+      "auto_mask": "hakushi_anima_gt_v1",
+      "step_offset": 0,
+      "total_steps": 0,
+      "ref_affinity": false,
+      "instance_mask": true
+    }
+  },
+  "93": {
+    "class_type": "KSamplerAdvanced",
+    "inputs": {
+      "model": [
+        "90",
+        0
+      ],
+      "add_noise": "enable",
+      "noise_seed": 20261107211,
+      "steps": 30,
+      "cfg": 4.0,
+      "sampler_name": "er_sde",
+      "scheduler": "simple",
+      "positive": [
+        "11",
+        0
+      ],
+      "negative": [
+        "12",
+        0
+      ],
+      "latent_image": [
+        "28",
+        0
+      ],
+      "start_at_step": 0,
+      "end_at_step": 8,
+      "return_with_leftover_noise": "disable"
+    }
+  },
+  "94": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "93",
+        0
+      ],
+      "vae": [
+        "15",
+        0
+      ]
+    }
+  },
+  "95": {
+    "class_type": "SnapRefRegionAutoMask",
+    "inputs": {
+      "image": [
+        "94",
+        0
+      ],
+      "probe": [
+        "90",
+        1
+      ],
+      "weights": "hakushi_anima_gt_v1",
+      "source": "attention",
+      "ref_weight": 1.0,
+      "segmentation_method": "graph_cut",
+      "lambda_smooth": 0.25,
+      "nonlocal_attention": false,
+      "half_resolution": true
+    }
+  },
+  "4": {
+    "class_type": "SnapRef",
+    "inputs": {
+      "model": [
+        "44",
+        0
+      ],
+      "clip": [
+        "45",
+        0
+      ],
+      "vae": [
+        "15",
+        0
+      ],
+      "image": [
+        "7",
+        0
+      ],
+      "image_2": [
+        "72",
+        0
+      ],
+      "adapter": "snapref_v2a_pre2.safetensors",
+      "mode": "cs",
+      "ref_in_uncond": false,
+      "ref_megapixels": 1.0,
+      "strength": 0.0,
+      "ref_caption": "",
+      "ref_guidance_on": false,
+      "correction": "apg",
+      "ref_end": 1.0,
+      "use_batch": false,
+      "multi_layout": "separate",
+      "weight_1": 1.0,
+      "weight_2": 1.0,
+      "weight_3": 1.0,
+      "fidelity": 1.0
+    }
+  },
+  "5": {
+    "class_type": "SnapRefRegionMask",
+    "inputs": {
+      "model": [
+        "4",
+        0
+      ],
+      "layout": "left_right",
+      "split": 0.5,
+      "feather": 0.05,
+      "outside_strength": 0.0,
+      "ref_start": 0.1,
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.5,
+      "height": 1.0,
+      "x_2": 0.5,
+      "y_2": 0.0,
+      "width_2": 0.0,
+      "height_2": 1.0,
+      "mask_1": [
+        "95",
+        0
+      ],
+      "mask_2": [
+        "95",
+        1
+      ]
+    }
+  },
   "19": {
     "class_type": "KSampler",
     "inputs": {
       "model": [
-        "118",
+        "5",
         0
       ],
       "positive": [
@@ -98,317 +266,35 @@
       "filename_prefix": "snapref_region_auto_mask_output"
     }
   },
-  "7": {
-    "class_type": "LoadImage",
+  "96": {
+    "class_type": "SnapRefRegionAutoMaskPanel",
     "inputs": {
-      "image": "snapref_region_mask_ref_C.png"
-    }
-  },
-  "72": {
-    "class_type": "LoadImage",
-    "inputs": {
-      "image": "snapref_region_mask_ref_D.png"
-    }
-  },
-  "4": {
-    "class_type": "SnapRef",
-    "inputs": {
-      "model": [
-        "44",
-        0
-      ],
-      "clip": [
-        "45",
-        0
-      ],
-      "vae": [
-        "15",
-        0
-      ],
-      "image": [
-        "7",
-        0
-      ],
-      "adapter": "snapref_v2a_pre2.safetensors",
-      "mode": "cs",
-      "ref_in_uncond": false,
-      "ref_megapixels": 1.0,
-      "strength": 0.0,
-      "ref_caption": "",
-      "ref_guidance_on": false,
-      "correction": "apg",
-      "ref_end": 1.0,
-      "use_batch": false,
-      "multi_layout": "separate",
-      "weight_1": 1.0,
-      "weight_2": 1.0,
-      "weight_3": 1.0,
-      "fidelity": 1.0,
-      "image_2": [
-        "72",
-        0
-      ]
-    }
-  },
-  "5": {
-    "class_type": "SnapRefRegionMask",
-    "inputs": {
-      "layout": "left_right",
-      "split": 0.5,
-      "feather": 0.05,
-      "outside_strength": 0,
-      "ref_start": 0.3125,
-      "x": 0.0,
-      "y": 0.0,
-      "width": 0.5,
-      "height": 1.0,
-      "x_2": 0.5,
-      "y_2": 0.0,
-      "width_2": 0.0,
-      "height_2": 1.0,
-      "model": [
-        "4",
-        0
-      ],
-      "mask_1": [
-        "95",
-        0
-      ],
-      "mask_2": [
-        "95",
-        1
-      ]
-    }
-  },
-  "90": {
-    "class_type": "SnapRefRegionProbe",
-    "inputs": {
-      "model": [
-        "44",
-        0
-      ],
-      "clip": [
-        "45",
-        0
-      ],
-      "text": "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
-      "person_1": "girl on the left",
-      "person_2": "girl on the right",
-      "block_weights": "none",
-      "auto_mask": "hakushi_anima_gt_v1",
-      "dump_path": ""
-    }
-  },
-  "93": {
-    "class_type": "KSamplerAdvanced",
-    "inputs": {
-      "model": [
-        "90",
-        0
-      ],
-      "add_noise": "enable",
-      "noise_seed": 20261107211,
-      "steps": 30,
-      "cfg": 4.0,
-      "sampler_name": "er_sde",
-      "scheduler": "simple",
-      "positive": [
-        "11",
-        0
-      ],
-      "negative": [
-        "12",
-        0
-      ],
-      "latent_image": [
-        "28",
-        0
-      ],
-      "start_at_step": 0,
-      "end_at_step": 4,
-      "return_with_leftover_noise": "disable"
-    }
-  },
-  "94": {
-    "class_type": "VAEDecode",
-    "inputs": {
-      "samples": [
-        "93",
-        0
-      ],
-      "vae": [
-        "15",
-        0
-      ]
-    }
-  },
-  "95": {
-    "class_type": "SnapRefRegionAutoMask",
-    "inputs": {
-      "image": [
+      "probe_image": [
         "94",
         0
       ],
-      "probe": [
-        "90",
-        1
-      ],
-      "weights": "hakushi_anima_gt_v1"
-    }
-  },
-  "110": {
-    "class_type": "SnapRefRegionProbe",
-    "inputs": {
-      "model": [
-        "5",
-        0
-      ],
-      "clip": [
-        "45",
-        0
-      ],
-      "text": "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
-      "person_1": "girl on the left",
-      "person_2": "girl on the right",
-      "block_weights": "none",
-      "auto_mask": "hakushi_anima_gt_v1",
-      "ref_affinity": true,
-      "dump_path": ""
-    }
-  },
-  "111": {
-    "class_type": "BasicScheduler",
-    "inputs": {
-      "model": [
-        "44",
-        0
-      ],
-      "scheduler": "simple",
-      "steps": 30,
-      "denoise": 1.0
-    }
-  },
-  "112": {
-    "class_type": "SplitSigmas",
-    "inputs": {
-      "sigmas": [
-        "111",
-        0
-      ],
-      "step": 8
-    }
-  },
-  "113": {
-    "class_type": "KSamplerSelect",
-    "inputs": {
-      "sampler_name": "er_sde"
-    }
-  },
-  "114": {
-    "class_type": "RandomNoise",
-    "inputs": {
-      "noise_seed": 20261107211
-    }
-  },
-  "115": {
-    "class_type": "CFGGuider",
-    "inputs": {
-      "model": [
-        "110",
-        0
-      ],
-      "positive": [
-        "11",
-        0
-      ],
-      "negative": [
-        "12",
-        0
-      ],
-      "cfg": 4.0
-    }
-  },
-  "116": {
-    "class_type": "SamplerCustomAdvanced",
-    "inputs": {
-      "noise": [
-        "114",
-        0
-      ],
-      "guider": [
-        "115",
-        0
-      ],
-      "sampler": [
-        "113",
-        0
-      ],
-      "sigmas": [
-        "112",
-        0
-      ],
-      "latent_image": [
-        "28",
-        0
-      ]
-    }
-  },
-  "117": {
-    "class_type": "VAEDecode",
-    "inputs": {
-      "samples": [
-        "116",
-        1
-      ],
-      "vae": [
-        "15",
-        0
-      ]
-    }
-  },
-  "119": {
-    "class_type": "SnapRefRegionAutoMask",
-    "inputs": {
-      "image": [
-        "117",
-        0
-      ],
-      "probe": [
-        "110",
-        1
-      ],
-      "weights": "hakushi_anima_gt_v1",
-      "source": "both",
-      "ref_weight": 1.0
-    }
-  },
-  "118": {
-    "class_type": "SnapRefRegionMask",
-    "inputs": {
-      "layout": "left_right",
-      "split": 0.5,
-      "feather": 0.05,
-      "outside_strength": 0,
-      "ref_start": 0.1,
-      "x": 0.0,
-      "y": 0.0,
-      "width": 0.5,
-      "height": 1.0,
-      "x_2": 0.5,
-      "y_2": 0.0,
-      "width_2": 0.0,
-      "height_2": 1.0,
-      "model": [
-        "4",
+      "final_image": [
+        "8",
         0
       ],
       "mask_1": [
-        "119",
+        "95",
         0
       ],
       "mask_2": [
-        "119",
+        "95",
         1
+      ],
+      "caption": "",
+      "layout": "final_overlay"
+    }
+  },
+  "97": {
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "96",
+        0
       ]
     }
   }

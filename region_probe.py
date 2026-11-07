@@ -1227,14 +1227,17 @@ class SnapRefRegionAutoMaskPanel:
     def INPUT_TYPES(cls):
         return {"required": {
             "probe_image": ("IMAGE",), "final_image": ("IMAGE",), "mask_1": ("MASK",), "mask_2": ("MASK",),
-        }, "optional": {"caption": ("STRING", {"multiline": True, "default": ""})}}
+        }, "optional": {
+            "caption": ("STRING", {"multiline": True, "default": ""}),
+            "layout": (["final_overlay", "4_panel"], {"default": "final_overlay"}),
+        }}
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("panel",)
     FUNCTION = "apply"
     CATEGORY = "SnapRef"
 
-    def apply(self, probe_image, final_image, mask_1, mask_2, caption=""):
+    def apply(self, probe_image, final_image, mask_1, mask_2, caption="", layout="final_overlay"):
         a = probe_image[0].float().cpu()
         b = final_image[0].float().cpu()
         H, W = b.shape[:2]
@@ -1243,6 +1246,8 @@ class SnapRefRegionAutoMaskPanel:
         masks = torch.stack([mask_1[0], mask_2[0]]).float().cpu() > 0.5
         if masks.shape[1:] != (H, W):
             masks = F.interpolate(masks[None].float(), size=(H, W), mode="nearest")[0] > 0.5
+        if layout == "final_overlay":
+            return (assign_panel(b, masks)[None],)
         row = torch.cat([label(a, "estimation image"), label(assign_panel(a, masks), "estimated regions"),
                          label(assign_panel(b, masks), "final (SnapRef) + regions"), label(b, "final")], dim=1)
         legend = "red = person 1 (SnapRef image)   blue = person 2 (SnapRef image_2)"

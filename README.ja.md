@@ -10,7 +10,7 @@ Animaの[SnapRef](https://github.com/ArcAnima/SnapRef)に、参照画像ごと�
 
 ![ちびキャラの左右・上下配置](docs/chibi.png)
 
-![自動マスク。上：参照C・D、下：最終画像に重ねた推定領域と最終画像](docs/auto_mask.png)
+![自動マスク（交差構図・膝枕）。上：参照C・D、下：最終画像に重ねた推定領域と最終画像](docs/auto_mask.png)
 
 ## 導入・使い方
 
@@ -72,7 +72,7 @@ MASKはモデルのトークン格子に合わせてリサイズされます。3
 |---|---|
 | SnapRef Region Probe | MODEL → MODEL, REGION_PROBE。画像トークンがプロンプト中の2人の人物語にどう注目したかを記録します（`person_1` は SnapRef の `image`、`person_2` は `image_2` に対応。言い換えは `\|` 区切り）。`auto_mask` に重みの名前を指定し、モデルの流れの最後に置きます。`instance_mask`（既定オン）で、ブロック16で画像トークンどうしがどう参照し合っているかも1 step 分記録し、人物をまとまりとして扱えるようにします。`ref_affinity` をオンにすると（SnapRef Region Mask の後ろ）、各画素がどちらの参照に似ているかも記録します |
 | SnapRef Region Auto Mask | IMAGE + REGION_PROBE → SnapRef Region Mask 用の `mask_1`、`mask_2`。記録した自己注意で画像トークンをまとまりに分け、まとまりごとに注目している人物語の人物を割り当て、SLIC で輪郭を画像の境目に合わせ、superpixel のグラフ上で最小カット（既定。`pymaxflow` が必要）で弱い手がかりを隣側へまとめる。29枚のテストセットで最悪場面の取り違え 11.7%→10.0%（全場面10%以下）、追加約5ms。`segmentation_method = existing` で従来の多数決。GPU で約0.2秒。`source` は `attention`（人物語）、`reference`（参照への類似度）、`both`（人物語に加え、帽子などを類似度で足す。`ref_weight` 1） |
-| SnapRef Region Auto Mask Panel | 推定に使った画像と最終画像に領域を重ねた確認用の画像を作ります |
+| SnapRef Region Auto Mask Panel | 最終画像に推定領域を重ねた確認用の画像を作ります（既定は単一画像合成 `layout = final_overlay`。4枚並びの `4_panel` も選択可能） |
 
 推奨構成（2つの段で seed・sampler・scheduler・CFG を揃え、30 step）:
 

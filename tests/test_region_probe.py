@@ -615,3 +615,22 @@ def test_instance_vote_recovers_bridged_displaced_part():
     fg = torch.ones(gh, gw)
     out = node.instance_vote(score, emb4, fg_weight=fg, emb_full=emb8)
     assert (out[2:9, 5:7] > 0).all()
+
+def test_auto_mask_panel_layouts():
+    panel_node = node.SnapRefRegionAutoMaskPanel()
+    img_a = torch.zeros(1, 64, 64, 3)
+    img_b = torch.ones(1, 64, 64, 3)
+    m1 = torch.zeros(1, 64, 64)
+    m1[:, :, :32] = 1.0
+    m2 = torch.zeros(1, 64, 64)
+    m2[:, :, 32:] = 1.0
+
+    # Default / final_overlay: returns single final image with overlay
+    out_default, = panel_node.apply(img_a, img_b, m1, m2)
+    assert out_default.shape == (1, 64, 64, 3), f"Expected (1, 64, 64, 3), got {out_default.shape}"
+
+    # 4_panel: returns 4 horizontal panels
+    out_4p, = panel_node.apply(img_a, img_b, m1, m2, layout="4_panel")
+    assert out_4p.shape[2] == 64 * 4, f"Expected width {64*4}, got {out_4p.shape[2]}"
+
+test_auto_mask_panel_layouts()
