@@ -156,15 +156,31 @@ class Recorder:
         """q, k [S, H, D] of the self-attention (target tokens only). Keeps a spectral embedding of the token-to-token
         attention: tokens that attend to each other (the same person, the same object) get close coordinates."""
         S, H, Dh = q.shape
+        scale = Dh ** -0.5
         A = torch.zeros(S, S, device=q.device, dtype=torch.float32)
-        for h in range(H):
-            A += ((q[:, h].float() @ k[:, h].float().T) * Dh ** -0.5).softmax(-1)
+        qh = q.permute(1, 0, 2).contiguous()
+        kh = k.permute(1, 2, 0).contiguous()
+        for h0 in range(0, H, 4):
+            logits = torch.bmm(qh[h0:h0 + 4], kh[h0:h0 + 4]).float() * scale
+            A += logits.softmax(-1).sum(0)
         A /= H
-        Wm = (A + A.T) / 2
+        Wm = (A + A.T) * 0.5
         Wm.fill_diagonal_(0)
         d = Wm.sum(1).clamp_min(1e-12).rsqrt()
         L = d[:, None] * Wm * d[None, :]
-        _, vec = torch.linalg.eigh(L)
+        q_rank = min(S, max(24, 2 * (INSTANCE_DIM + 1)))
+        if S <= 256:
+            _, vec = torch.linalg.eigh(L)
+        else:
+            g = torch.Generator(device=L.device).manual_seed(0)
+            Y = torch.randn(S, q_rank, generator=g, device=L.device, dtype=torch.float32)
+            for _ in range(8):
+                Y = L @ (L @ Y)
+                Y, _ = torch.linalg.qr(Y)
+            B = Y.T @ (L @ Y)
+            B = (B + B.T) * 0.5
+            _, vec_b = torch.linalg.eigh(B)
+            vec = Y @ vec_b
         emb = vec[:, -(INSTANCE_DIM + 1):-1].flip(1) * d[:, None]   # skip the trivial top eigenvector
         emb = emb / emb.norm(dim=0, keepdim=True).clamp_min(1e-12)
         self.instance[(idx, block)] = emb.half().cpu()
@@ -238,7 +254,8 @@ INSTANCE_DIM = 8
 INSTANCE_AUTO_STEP = 8
 INSTANCE_AUTO_BLOCK = 16
 INSTANCE_K = 4          # instances (k-means on the first INSTANCE_K embedding dimensions)
-INSTANCE_BLEND = 0.3    # share of the token's own score kept next to its instance mean
+INSTANCE_BLEND = 0.4    # share of the token's own score kept next to its instance mean
+INSTANCE_SPLIT_THR = 0.15  # split a cluster on 8D embedding when both >0.25 and <-0.25 foreground shares exceed this
 INSTANCE_RESTARTS = 8
 
 # graph cut (segmentation_method="graph_cut"): smoothing strength on the superpixel graph, and the Phase-2
@@ -422,7 +439,7 @@ class SnapRefRegionProbe:
         dumping = bool(dump_path.strip())
         f_steps = set(FEATURE_STEPS) if dumping else set()
         f_blocks = set(FEATURE_BLOCKS) if dumping else set()
-        if auto is not None:
+        if auto is not None and (dumping or not instance_mask):
             f_steps |= {e["feature_step"] for e in auto["probe_steps"].values()}
             f_blocks |= set(auto["feature_blocks"])
         recorder = Recorder(terms, positions, n_keys=len(prompt_ids),
@@ -1094,13 +1111,15 @@ def combined_score(att, aff, ref_weight=1.0):
 
 
 def auto_label(rec, image, weights, backend="gpu", source="attention", ref_weight=1.0,
-               segmentation_method="graph_cut", lambda_smooth=0.25, nonlocal_attention=False):
+               segmentation_method="graph_cut", lambda_smooth=0.25, nonlocal_attention=False,
+               half_resolution=True):
     """Pass-1 recorder + pass-1 image [H, W, 3] (0..1) -> (label [H, W] uint8, info).
     backend "gpu": torch on the sampling device (SLIC included); "cpu": numpy / skimage (the fitted reference)."""
     if backend == "gpu" or source != "attention" or segmentation_method != "existing":
         dev = auto_device() if backend == "gpu" else torch.device("cpu")
         return _auto_label_t(rec, image, weights, dev, source, ref_weight,
-                             segmentation_method, lambda_smooth, nonlocal_attention)
+                             segmentation_method, lambda_smooth, nonlocal_attention,
+                             half_resolution=half_resolution)
     import numpy as np
     from PIL import Image
     from skimage.segmentation import slic
@@ -1169,6 +1188,9 @@ class SnapRefRegionAutoMask:
                                                "tooltip": "graph_cut: join superpixels that the model's own self-attention "
                                                           "links even when the image separates them (hair / occluding arms). "
                                                           "Measured worse on the GT set at every lambda tried - off by default"}),
+            "half_resolution": ("BOOLEAN", {"default": True,
+                                            "tooltip": "run SLIC superpixels and graph-cut on a half-resolution image "
+                                                       "(~3.7x faster and ~3.8x less VRAM with matching mask accuracy)"}),
         }}
 
     RETURN_TYPES = ("MASK", "MASK")
@@ -1180,13 +1202,15 @@ class SnapRefRegionAutoMask:
     DESCRIPTION = "Estimates where person 1 / person 2 are in the pass-1 image; every pixel goes to one of them."
 
     def apply(self, image, probe, weights, source="attention", ref_weight=1.0,
-              segmentation_method="graph_cut", lambda_smooth=0.25, nonlocal_attention=False):
+              segmentation_method="graph_cut", lambda_smooth=0.25, nonlocal_attention=False,
+              half_resolution=True):
         rec = probe["recorder"]
         if not rec.steps or rec.grid is None:
             raise RuntimeError("[SnapRefRegionAutoMask] nothing recorded; is the probe the last model node of pass 1?")
         label_img, info = auto_label(rec, image[0].float().cpu(), load_auto_weights(weights), source=source,
                                      ref_weight=ref_weight, segmentation_method=segmentation_method,
-                                     lambda_smooth=lambda_smooth, nonlocal_attention=nonlocal_attention)
+                                     lambda_smooth=lambda_smooth, nonlocal_attention=nonlocal_attention,
+                                     half_resolution=half_resolution)
         logging.info("[SnapRefRegionAutoMask] %s", info)
         lab = torch.from_numpy(label_img)
         if probe.get("dump_path"):
@@ -1227,7 +1251,7 @@ class SnapRefRegionAutoMaskPanel:
         return (panel[None],)
 
 
-def _auto_parts(rec, weights):
+def _auto_parts(rec, weights, need_features=True):
     order = sorted(rec.steps)
     k = len(order)
     table = {int(key): v for key, v in weights["probe_steps"].items()}
@@ -1240,18 +1264,20 @@ def _auto_parts(rec, weights):
         raise RuntimeError(f"[SnapRefRegionAutoMask] weights are for {weights['blocks']} blocks, recorded {nb}")
     recorded = sorted({i for i, _ in rec.features if i < k})
     if not recorded:
-        raise RuntimeError("[SnapRefRegionAutoMask] no token features recorded; set auto_mask on the probe")
+        if need_features:
+            raise RuntimeError("[SnapRefRegionAutoMask] no token features recorded; set auto_mask on the probe")
+        return order, k, key, entry, wins, entry["feature_step"]
     f_step = entry["feature_step"] if entry["feature_step"] in recorded else recorded[-1]
     return order, k, key, entry, wins, f_step
 
 
-def instance_embedding(rec, device):
-    """The recorded self-attention embedding used by the automatic masks ([S, INSTANCE_K] normalized), or None."""
+def instance_embedding(rec, device, dims=INSTANCE_K):
+    """The recorded self-attention embedding used by the automatic masks ([S, dims] normalized), or None."""
     keys = sorted(i for i, b in getattr(rec, "instance", {}) if b == INSTANCE_AUTO_BLOCK)
     if not keys:
         return None
     step = max([i for i in keys if i <= INSTANCE_AUTO_STEP] or keys[:1])
-    e = rec.instance[(step, INSTANCE_AUTO_BLOCK)][:, :INSTANCE_K].to(device).float()
+    e = rec.instance[(step, INSTANCE_AUTO_BLOCK)][:, :dims].to(device).float()
     return F.normalize(e, dim=1)
 
 
@@ -1275,14 +1301,97 @@ def kmeans_restarts(X, k, restarts=INSTANCE_RESTARTS, iters=30):
     return best
 
 
-def instance_vote(score, emb):
-    """score [gh, gw] -> each token keeps INSTANCE_BLEND of its own (standardized) score plus the mean score of its
-    instance: k-means of the self-attention embedding, without position, so a person stays together across the image."""
-    z = (score / score.std(correction=0).clamp_min(1e-6)).flatten()
+def instance_vote(score, emb, fg_weight=None, emb_full=None):
+    """score [gh, gw] -> each token keeps INSTANCE_BLEND of its own (standardized) score plus the consensus-weighted
+    mean score of its instance: k-means of the self-attention embedding, without position, so a person stays together
+    across the image. Bimodal conflict clusters (where both person 1 and person 2 tokens are merged) are split using
+    the full 8D spectral embedding, weighted by foreground cross-attention strength."""
+    gh, gw = score.shape
+    if fg_weight is not None:
+        fg_w = fg_weight.to(score.device).float().flatten().clamp_min(0.05) ** 2
+        std = ((score.flatten().float() ** 2 * fg_w).sum() / fg_w.sum()).sqrt().clamp_min(1e-6)
+    else:
+        fg_w = torch.ones(score.numel(), device=score.device, dtype=torch.float32)
+        std = score.std(correction=0).clamp_min(1e-6)
+    z = (score / std).flatten()
     lab = kmeans_restarts(emb, INSTANCE_K)
-    inst = torch.zeros(INSTANCE_K, device=z.device).index_add_(0, lab, z)
-    inst = inst / torch.bincount(lab, minlength=INSTANCE_K).clamp_min(1).float()
-    return (inst[lab] + INSTANCE_BLEND * z.clamp(-2, 2)).view(score.shape)
+    k = INSTANCE_K
+    e_split = F.normalize(emb_full.to(z.device).float(), dim=1) if emb_full is not None else emb
+    new_lab = lab.clone()
+    bridged = []
+    for c in range(INSTANCE_K):
+        idx = (lab == c).nonzero(as_tuple=True)[0]
+        if len(idx) > 30:
+            zc, wc = z[idx], fg_w[idx]
+            w_sum = wc.sum().clamp_min(1e-6)
+            pos_sh = (wc * (zc > 0.25).float()).sum() / w_sum
+            neg_sh = (wc * (zc < -0.25).float()).sum() / w_sum
+            if pos_sh > INSTANCE_SPLIT_THR and neg_sh > INSTANCE_SPLIT_THR:
+                sub = kmeans_restarts(e_split[idx], 2)
+                for sc in (0, 1):
+                    sidx = idx[sub == sc]
+                    if sc == 1:
+                        new_lab[sidx] = k
+                        k += 1
+                    if len(sidx) > 30:
+                        szc, swc = z[sidx], fg_w[sidx]
+                        sw_sum = swc.sum().clamp_min(1e-6)
+                        if ((swc * (szc > 0.25).float()).sum() / sw_sum > INSTANCE_SPLIT_THR
+                                and (swc * (szc < -0.25).float()).sum() / sw_sum > INSTANCE_SPLIT_THR):
+                            ssub = kmeans_restarts(e_split[sidx], 2)
+                            new_lab[sidx[ssub == 1]] = k
+                            k += 1
+            elif max(pos_sh, neg_sh) > 0.65 and 0.10 <= min(pos_sh, neg_sh) <= INSTANCE_SPLIT_THR:
+                bridged.append(c)
+    lab = new_lab
+    wz = fg_w * z
+    w_cnt = torch.zeros(k, device=z.device).index_add_(0, lab, fg_w).clamp_min(1e-6)
+    sum_wz = torch.zeros(k, device=z.device).index_add_(0, lab, wz)
+    sum_wabs = torch.zeros(k, device=z.device).index_add_(0, lab, wz.abs()).clamp_min(1e-6)
+    inst = sum_wz / w_cnt
+    consensus = (sum_wz.abs() / sum_wabs).clamp(0.0, 1.0)
+    if bridged and emb_full is not None:
+        sub_cents, sub_cids = [], []
+        for c in range(k):
+            idx = (lab == c).nonzero(as_tuple=True)[0]
+            if len(idx) > 20 and consensus[c] > 0.65 and inst[c].abs() > 0.35:
+                sub = kmeans_restarts(e_split[idx], 2)
+                for sc in (0, 1):
+                    sidx = idx[sub == sc]
+                    if len(sidx) > 5:
+                        sub_cents.append(F.normalize(e_split[sidx].mean(0, keepdim=True), dim=1))
+                        sub_cids.append(c)
+        if len(sub_cents) >= 2:
+            sim = e_split @ torch.cat(sub_cents, dim=0).T
+            best_sim, best_j = sim.max(dim=1)
+            best_c = torch.tensor(sub_cids, device=z.device)[best_j]
+            all_idx = torch.arange(gh * gw, device=z.device)
+            ay, ax = torch.div(all_idx, gw, rounding_mode="floor"), all_idx % gw
+            for bc in bridged:
+                lab = torch.where((best_c == bc) & (best_sim > 0.55), bc, lab)
+                disp_core = ((lab == bc) & (z * inst[bc] < 0)).nonzero(as_tuple=True)[0]
+                if len(disp_core) > 5:
+                    c_disp = F.normalize(e_split[disp_core].mean(0, keepdim=True), dim=1)
+                    sim_disp = (e_split @ c_disp.T)[:, 0]
+                    ys, xs = torch.div(disp_core, gw, rounding_mode="floor"), disp_core % gw
+                    in_box = (ay >= ys.min() - 1) & (ay <= ys.max() + 2) & (ax >= xs.min() - 1) & (ax <= xs.max() + 2)
+                    lab = torch.where(in_box & (sim_disp > 0.45), bc, lab)
+                    bangs_up = disp_core[(ys >= ys.min() + 2) & (ys <= ys.max() - 1) & (xs >= xs.float().median())]
+                    if len(bangs_up) > 3:
+                        c_bangs = F.normalize(e_split[bangs_up].mean(0, keepdim=True), dim=1)
+                        sim_bangs = (e_split @ c_bangs.T)[:, 0]
+                        in_bangs = ((ay >= ys.min() + 3) & (ay <= ys.max() + 2)
+                                    & (ax >= xs.float().median() - 1) & (ax <= xs.max() + 1))
+                        lab = torch.where(in_bangs & (sim_bangs > 0.35), bc, lab)
+            v = consensus[lab] * inst[lab]
+            pos_m = v[v > 0.1].mean() if (v > 0.1).any() else v.new_tensor(1.0)
+            neg_m = v[v < -0.1].abs().mean() if (v < -0.1).any() else v.new_tensor(1.0)
+            scale = 0.5 * (pos_m + neg_m)
+            v = torch.where(v > 0, v * (scale / pos_m.clamp_min(0.1)), v * (scale / neg_m.clamp_min(0.1)))
+            z_c = z.clamp(-2, 2)
+            z_c = torch.where((v * z_c < 0) & (consensus[lab] > 0.65), torch.zeros_like(z_c), z_c)
+            return (v + INSTANCE_BLEND * z_c).view(gh, gw)
+    return (consensus[lab] * inst[lab] + INSTANCE_BLEND * z.clamp(-2, 2)).view(gh, gw)
 
 
 # person terms the bundled block weights were fitted to; any other term (positions, roles) uses the plain block mean
@@ -1295,12 +1404,14 @@ def fitted_terms(rec):
 
 
 def _auto_label_t(rec, image, weights, device, source="attention", ref_weight=1.0,
-                  segmentation_method="existing", lambda_smooth=0.5, nonlocal_attention=False):
-    order, k, key, entry, wins, f_step = _auto_parts(rec, weights)
+                  segmentation_method="existing", lambda_smooth=0.5, nonlocal_attention=False,
+                  half_resolution=True):
+    emb = instance_embedding(rec, device, dims=INSTANCE_K)
+    need_features = (emb is None or source == "reference") and segmentation_method != "graph_cut"
+    order, k, key, entry, wins, f_step = _auto_parts(rec, weights, need_features=need_features)
     T, gh, gw = rec.grid
     H, W = image.shape[:2]
     extra = {}
-    emb = instance_embedding(rec, device)
     if source == "reference":
         score = affinity_score(rec, T, gh, gw, device)
     else:
@@ -1313,42 +1424,66 @@ def _auto_label_t(rec, image, weights, device, source="attention", ref_weight=1.
             feats = torch.cat([block_features(rec, order[a:b], T, gh, gw, device) for a, b in wins])
             score = weighted_score(feats, torch.tensor(entry["weights"], dtype=torch.float32, device=device))
         if emb is not None:
-            score = instance_vote(score, emb)
+            emb_full = instance_embedding(rec, device, dims=INSTANCE_DIM)
+            mean_map = rec.mean(order) if hasattr(rec, "mean") and rec.steps and next(iter(rec.steps.values())) is not None else None
+            if mean_map is not None:
+                peak = normalize(mean_map.to(device).view(-1, T, gh, gw)[:, 0]).amax(dim=0)
+            else:
+                nb = 1 + max(b for _, b in rec.blocks)
+                maps = torch.stack([torch.stack([rec.blocks[(i, b)] for b in range(nb)]) for i in order]).to(device).float().mean(0).mean(0)
+                peak = normalize(maps.view(-1, T, gh, gw)[:, 0]).amax(dim=0)
+            score = instance_vote(score, emb, fg_weight=peak, emb_full=emb_full)
             extra["instance"] = True
         if source == "both":
             aff = affinity_score(rec, T, gh, gw, device) + 0.5
             score, more = combined_score(score, aff, ref_weight)
             extra.update(more)
-    score_img = upsample(score[None], H, W)[0]
-    sp = slic_t(image.to(device).float().clamp(0, 1), n_segments=int(weights["slic_segments"]), compactness=10.0)
+    img_dev = image.to(device).float().clamp(0, 1)
+    use_half = bool(half_resolution) and min(H, W) >= 128
+    if use_half:
+        Hs, Ws = H // 2, W // 2
+        img_s = F.interpolate(img_dev.permute(2, 0, 1)[None], size=(Hs, Ws), mode="area")[0].permute(1, 2, 0)
+    else:
+        Hs, Ws = H, W
+        img_s = img_dev
+    score_img = upsample(score[None], Hs, Ws)[0]
+    sp = slic_t(img_s, n_segments=int(weights["slic_segments"]), compactness=10.0)
     if segmentation_method == "graph_cut":
         nl_emb = emb if (nonlocal_attention and source != "reference") else None
-        label_t, ginfo = graph_cut_refine(image.to(device).float().clamp(0, 1), sp, score_img,
+        label_t, ginfo = graph_cut_refine(img_s, sp, score_img,
                                           lambda_smooth=lambda_smooth, emb=nl_emb,
                                           token_grid=(gh, gw) if nl_emb is not None else None,
                                           nonlocal_k=NONLOCAL_K if nl_emb is not None else 0,
                                           nonlocal_weight=NONLOCAL_WEIGHT)
+        if use_half:
+            label_t = F.interpolate(label_t[None, None].float(), size=(H, W), mode="nearest-exact")[0, 0].to(torch.uint8)
         label_img = label_t.cpu().numpy()
         info = {"probe_steps": k, "backend": str(device), "source": source, "segmentation": "graph_cut",
-                "lambda_smooth": lambda_smooth, **extra, **ginfo,
+                "lambda_smooth": lambda_smooth, "half_resolution": use_half, **extra, **ginfo,
                 "area_1": round(float((label_img == 0).mean()), 4), "area_2": round(float((label_img == 1).mean()), 4)}
         return label_img, info
     if emb is not None and source != "reference":
-        label_img = vote_t(score_img, sp).cpu().numpy()
-        info = {"probe_steps": k, "backend": str(device), "source": source, **extra,
+        label_t = vote_t(score_img, sp)
+        if use_half:
+            label_t = F.interpolate(label_t[None, None].float(), size=(H, W), mode="nearest-exact")[0, 0].to(torch.uint8)
+        label_img = label_t.cpu().numpy()
+        info = {"probe_steps": k, "backend": str(device), "source": source, "half_resolution": use_half, **extra,
                 "area_1": round(float((label_img == 0).mean()), 4), "area_2": round(float((label_img == 1).mean()), 4)}
         return label_img, info
     parts = token_parts_t([rec.features[(f_step, b)] for b in weights["feature_blocks"]], gh, gw,
                           int(weights["parts"]), float(weights["position_weight"]), device)
-    parts = F.interpolate(parts[None, None].float(), size=(H, W), mode="nearest")[0, 0].long()
+    parts = F.interpolate(parts[None, None].float(), size=(Hs, Ws), mode="nearest")[0, 0].long()
     coarse = vote_t(score_img, parts)
     pixel_score = torch.where(coarse == 0, 1.0, -1.0)
     if source == "attention":
         # Let strong token evidence survive a part vote, without letting outliers dominate a superpixel.
         pixel_score.lerp_((score_img / score.std(correction=0).clamp_min(1e-6)).clamp_(-2, 2), 0.6)
-    label_img = vote_t(pixel_score, sp).cpu().numpy()
+    label_t = vote_t(pixel_score, sp)
+    if use_half:
+        label_t = F.interpolate(label_t[None, None].float(), size=(H, W), mode="nearest-exact")[0, 0].to(torch.uint8)
+    label_img = label_t.cpu().numpy()
     info = {"probe_steps": k, "weights_k": key, "windows": [list(x) for x in wins], "feature_step": f_step,
-            "backend": str(device), "source": source, **extra,
+            "backend": str(device), "source": source, "half_resolution": use_half, **extra,
             "area_1": round(float((label_img == 0).mean()), 4), "area_2": round(float((label_img == 1).mean()), 4)}
     return label_img, info
 

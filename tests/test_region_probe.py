@@ -513,3 +513,105 @@ def test_graph_cut_nonlocal_follows_self_attention():
                                         token_grid=(gh, gw), nonlocal_k=4, nonlocal_weight=10.0)
     assert info["nonlocal_edges"] > 0
     assert (fixed[:, : W // 2] == 0).all() and (fixed[:, W // 2:] == 1).all()
+
+
+
+def test_instance_vote_splits_bimodal_conflict_cluster():
+    torch.manual_seed(0)
+    gh, gw = 8, 8
+    S = gh * gw
+    # First 4 dims merge person 1 (rows 0..3) and person 2 (rows 4..7) into the same cluster; dim 5 separates them
+    emb8 = torch.zeros(S, 8)
+    emb8[:, 0] = 1.0
+    emb8[:32, 5] = 1.0
+    emb8[32:, 5] = -1.0
+    emb8 += 0.01 * torch.randn_like(emb8)
+    emb4 = torch.nn.functional.normalize(emb8[:, :4], dim=1)
+    score = torch.ones(gh, gw)
+    score[4:, :] = -1.5
+    fg = torch.ones(gh, gw)
+    out = node.instance_vote(score, emb4, fg_weight=fg, emb_full=emb8)
+    assert (out[:4, :] > 0).all() and (out[4:, :] < 0).all()
+
+
+def test_auto_mask_half_resolution_and_skip_features_when_instance():
+    pytest.importorskip("maxflow")
+    torch.manual_seed(0)
+    spec_opt = node.SnapRefRegionAutoMask.INPUT_TYPES()["optional"]
+    assert "half_resolution" in spec_opt and spec_opt["half_resolution"][1]["default"] is True
+    gh, gw, k = 8, 8, 8
+    S = gh * gw
+    rec = node.Recorder(["1girl", "1man"], [[0], [1]], keep_blocks=True, keep_features=False)
+    rec.grid = (1, gh, gw)
+    left = (torch.arange(S) % gw < gw // 2).float()
+    share = torch.stack([left, 1 - left])
+    for idx in range(k):
+        rec.progress[idx] = idx / 30
+        for b in range(2):
+            rec.add(idx, share, block=b)
+    emb = torch.zeros(S, node.INSTANCE_DIM)
+    emb[left == 1, 0] = 1.0
+    emb[left == 0, 1] = 1.0
+    rec.instance[(8, node.INSTANCE_AUTO_BLOCK)] = emb.half()
+    weights = {"blocks": 2, "feature_blocks": [0, 1], "parts": 4, "position_weight": 3.0, "slic_segments": 40,
+               "probe_steps": {"8": {"windows": [[0, 8]], "feature_step": 3, "weights": [1.0, 1.0, 0.0],
+                                     "loso": {"window": "all"}}}}
+    img = torch.zeros(128, 128, 3)
+    img[:, :64, 0] = 1.0
+    img[:, 64:, 2] = 1.0
+    lab_half, info_half = node.auto_label(rec, img, weights, half_resolution=True)
+    lab_full, info_full = node.auto_label(rec, img, weights, half_resolution=False)
+    assert info_half["half_resolution"] is True and info_full["half_resolution"] is False
+    assert (lab_half[:, :60] == 0).all() and (lab_half[:, 68:] == 1).all()
+    assert (lab_full[:, :60] == 0).all() and (lab_full[:, 68:] == 1).all()
+
+
+def test_fast_add_instance_large_sequence():
+    torch.manual_seed(0)
+    S, H, D = 300, 4, 8
+    group = torch.arange(S) % 2 == 0
+    centre = torch.randn(2, H, D) * 3
+    q = centre[group.long()] + 0.1 * torch.randn(S, H, D)
+    rec = node.Recorder(["a", "b"], [[0], [1]])
+    rec.add_instance(5, 16, q, q.clone())
+    emb = rec.instance[(5, 16)].float()
+    assert emb.shape == (S, node.INSTANCE_DIM)
+    first = emb[:, 0]
+    assert ((first[group] > 0).all() and (first[~group] < 0).all()) or ((first[group] < 0).all() and (first[~group] > 0).all())
+
+
+def test_instance_vote_recovers_bridged_displaced_part():
+    torch.manual_seed(0)
+    gh, gw = 10, 12
+    S = gh * gw
+    emb8 = torch.zeros(S, 8)
+    ys, xs = torch.meshgrid(torch.arange(gh), torch.arange(gw), indexing="ij")
+    p1_upper = ((ys < 5) & (xs < 5)).flatten()
+    p1_lower = ((ys >= 5) & (xs < 5)).flatten()
+    p1_head_left = ((ys >= 3) & (ys <= 6) & (xs == 5)).flatten()
+    p1_head_right = ((ys >= 3) & (ys <= 6) & (xs >= 6) & (xs <= 7)).flatten()
+    bg = ((ys < 2) & (xs >= 5)).flatten()
+    p2_body = ~(p1_upper | p1_lower | p1_head_left | p1_head_right | bg)
+    # 4 clusters in first 4 dims: c0 = p1_upper + p1_lower + p1_head_left (54 tokens: 50 pos, 4 neg -> neg_sh = 4/54 = 0.074.. wait: make 7 tokens in p1_head_left so 7/57 = 0.123!)
+    p1_head_left = ((ys >= 2) & (ys <= 8) & (xs == 5)).flatten()
+    p1_head_right = ((ys >= 2) & (ys <= 8) & (xs == 6)).flatten()
+    bg = ((ys < 2) & (xs >= 5)).flatten()
+    p2_a = ((ys >= 2) & (ys < 6) & (xs >= 7)).flatten()
+    p2_b = ((ys >= 6) & (xs >= 7)).flatten()
+    emb8[p1_upper, 0] = 1.0
+    emb8[p1_upper, 4] = 0.8
+    emb8[p1_lower, 0] = 1.0
+    emb8[p1_lower, 4] = -0.8
+    emb8[p1_head_left, 0] = 1.0
+    emb8[p1_head_left, 5] = 1.0
+    emb8[p1_head_right, 2] = 0.9
+    emb8[p1_head_right, 5] = 1.2
+    emb8[bg, 1] = 1.0
+    emb8[p2_a, 2] = 1.0
+    emb8[p2_b, 3] = 1.0
+    emb8 += 0.01 * torch.randn_like(emb8)
+    emb4 = torch.nn.functional.normalize(emb8[:, :4], dim=1)
+    score = torch.where(xs < 5, 1.0, -1.0).float()
+    fg = torch.ones(gh, gw)
+    out = node.instance_vote(score, emb4, fg_weight=fg, emb_full=emb8)
+    assert (out[2:9, 5:7] > 0).all()

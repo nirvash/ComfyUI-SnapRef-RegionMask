@@ -19,7 +19,7 @@ import math
 import torch
 import comfy.patcher_extension
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 KEY = "snapref_region_mask"
 OUTER_KEY = "snapref_region_mask_outer"
