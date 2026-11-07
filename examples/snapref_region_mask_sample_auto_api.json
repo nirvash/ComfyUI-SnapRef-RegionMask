@@ -27,7 +27,7 @@
         "45",
         0
       ],
-      "text": "masterpiece, best quality, 2girls, living room, sofa, afternoon sunlight, lap pillow, the sitting girl sits on the sofa and gently strokes the lying girl's hair, the lying girl lies on the sofa with her head resting on the sitting girl's lap and smiles with her eyes closed, the lying girl has pink hair in twin buns and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the sitting girl has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
+      "text": "masterpiece, best quality, 2girls, living room, sofa, bright room, daylight, lap pillow, the lying girl has pink hair in twin buns and blue eyes, wears a light blue hoodie with a bunny ears hood and a white skirt, and lies on the sofa resting her head on the lap, the sitting girl has short orange hair with a green hairpin and green eyes, wears an orange overall dress over a white t-shirt, and sits on the sofa gently stroking hair"
     }
   },
   "12": {
@@ -71,7 +71,7 @@
         "45",
         0
       ],
-      "text": "masterpiece, best quality, 2girls, living room, sofa, afternoon sunlight, lap pillow, the sitting girl sits on the sofa and gently strokes the lying girl's hair, the lying girl lies on the sofa with her head resting on the sitting girl's lap and smiles with her eyes closed, the lying girl has pink hair in twin buns and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the sitting girl has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
+      "text": "masterpiece, best quality, 2girls, living room, sofa, bright room, daylight, lap pillow, the lying girl has pink hair in twin buns and blue eyes, wears a light blue hoodie with a bunny ears hood and a white skirt, and lies on the sofa resting her head on the lap, the sitting girl has short orange hair with a green hairpin and green eyes, wears an orange overall dress over a white t-shirt, and sits on the sofa gently stroking hair",
       "person_1": "lying girl",
       "person_2": "sitting girl",
       "block_weights": "none",
@@ -197,7 +197,7 @@
       "split": 0.5,
       "feather": 0.05,
       "outside_strength": 0.0,
-      "ref_start": 0.1,
+      "ref_start": 0.0,
       "x": 0.0,
       "y": 0.0,
       "width": 0.5,

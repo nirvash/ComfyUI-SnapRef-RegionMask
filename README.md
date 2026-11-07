@@ -77,7 +77,7 @@ Instead of drawing regions, estimate each person's region from the generation it
 Recommended graph (same seed, sampler, scheduler and CFG in both stages, 30 steps):
 
 1. **Estimate**: model → Region Probe (`auto_mask`, `instance_mask` on) → KSamplerAdvanced steps 0–8 (`return_with_leftover_noise = disable`) → VAEDecode → Auto Mask → masks.
-2. **Final**: SnapRef → Region Mask (the masks, `ref_start = 0.1`) → KSampler, 30 steps.
+2. **Final**: SnapRef → Region Mask (the masks, `ref_start = 0.0`) → KSampler, 30 steps.
 
 The masks come from step 8 without the references, so the prompt has to fix who is where. Use person terms that fit the composition, and refer to the people with the same words in the prompt, with their looks bound to them:
 

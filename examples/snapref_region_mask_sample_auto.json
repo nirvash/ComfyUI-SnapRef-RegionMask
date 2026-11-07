@@ -1,5 +1,5 @@
 {
-  "id": "57d2d94a-b914-4fbe-97f4-fa9f6ace73cc",
+  "id": "33a880aa-6c0d-4328-8716-8be960ac9791",
   "revision": 0,
   "last_node_id": 97,
   "last_link_id": 32,
@@ -213,7 +213,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "masterpiece, best quality, 2girls, living room, sofa, afternoon sunlight, lap pillow, the sitting girl sits on the sofa and gently strokes the lying girl's hair, the lying girl lies on the sofa with her head resting on the sitting girl's lap and smiles with her eyes closed, the lying girl has pink hair in twin buns and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the sitting girl has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
+        "masterpiece, best quality, 2girls, living room, sofa, bright room, daylight, lap pillow, the lying girl has pink hair in twin buns and blue eyes, wears a light blue hoodie with a bunny ears hood and a white skirt, and lies on the sofa resting her head on the lap, the sitting girl has short orange hair with a green hairpin and green eyes, wears an orange overall dress over a white t-shirt, and sits on the sofa gently stroking hair"
       ]
     },
     {
@@ -575,7 +575,7 @@
         "Node name for S&R": "SnapRefRegionProbe"
       },
       "widgets_values": [
-        "masterpiece, best quality, 2girls, living room, sofa, afternoon sunlight, lap pillow, the sitting girl sits on the sofa and gently strokes the lying girl's hair, the lying girl lies on the sofa with her head resting on the sitting girl's lap and smiles with her eyes closed, the lying girl has pink hair in twin buns and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the sitting girl has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
+        "masterpiece, best quality, 2girls, living room, sofa, bright room, daylight, lap pillow, the lying girl has pink hair in twin buns and blue eyes, wears a light blue hoodie with a bunny ears hood and a white skirt, and lies on the sofa resting her head on the lap, the sitting girl has short orange hair with a green hairpin and green eyes, wears an orange overall dress over a white t-shirt, and sits on the sofa gently stroking hair",
         "lying girl",
         "sitting girl",
         "none",
@@ -1326,7 +1326,7 @@
         0.5,
         0.05,
         0.0,
-        0.1,
+        0.0,
         0.0,
         0.0,
         0.5,

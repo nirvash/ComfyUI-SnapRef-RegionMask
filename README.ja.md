@@ -77,7 +77,7 @@ MASKはモデルのトークン格子に合わせてリサイズされます。3
 推奨構成（2つの段で seed・sampler・scheduler・CFG を揃え、30 step）:
 
 1. **推定**: モデル → Region Probe（`auto_mask`、`instance_mask` オン）→ KSamplerAdvanced で 0〜8 step（`return_with_leftover_noise = disable`）→ VAEDecode → Auto Mask → マスク
-2. **本番**: SnapRef → Region Mask（そのマスク、`ref_start = 0.1`）→ KSampler で 30 step
+2. **本番**: SnapRef → Region Mask（そのマスク、`ref_start = 0.0`）→ KSampler で 30 step
 
 マスクは参照なしの 8 step 目から作るので、誰がどこにいるかはプロンプトで決める必要があります。人物語は構図に合った語にし、プロンプトでも同じ語で人物を指して、見た目をその人物に結び付けて書きます。
 
