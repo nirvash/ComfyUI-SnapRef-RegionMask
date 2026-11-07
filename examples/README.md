@@ -10,6 +10,7 @@
 | [木の上と下](#木の上と下上下mask) | C＝上、D＝下 | 上下のMASK | [UI](snapref_region_mask_sample_masks.json) / [API](snapref_region_mask_sample_masks_api.json) |
 | [クレーンゲーム](#クレーンゲーム左右交換box) | B＝左、A＝右 | 人物ごとのbox | [UI](snapref_region_mask_sample_arcade.json) / [API](snapref_region_mask_sample_arcade_api.json) |
 | [膝枕（交差構図・自動マスク）](#膝枕交差構図自動マスク) | C＝寝ている側、D＝座っている側 | 自動マスク（2段推定） | [UI](snapref_region_mask_sample_auto.json) / [API](snapref_region_mask_sample_auto_api.json) |
+| [1名参照＋1名プロンプト（ハイブリッド）](#1名参照1名プロンプトハイブリッド) | C＝左（参照）、右＝プロンプトのみ | 左右分割（outside_strength=0） | [UI](snapref_region_mask_sample_one_ref.json) / [API](snapref_region_mask_sample_one_ref_api.json) |
 
 ## カフェ：左右分割
 
@@ -78,6 +79,21 @@
 ワークフローは「1. 推定（8 steps）」「2. 本番（30 steps）」の2グループです。Region Probe の `text` はプロンプトと同じ文にしておく必要があるので、プロンプトを変えたら Probe の `text` にも貼り付けてください。
 
 [生成画像](sample_auto_output.png) · [推定した領域](sample_auto_regions.png) · [ワークフロー](snapref_region_mask_sample_auto.json) · [正確なプロンプト・設定（API JSON）](snapref_region_mask_sample_auto_api.json)
+
+
+## 1名参照＋1名プロンプト（ハイブリッド）
+
+![1名参照＋1名プロンプト：左のC（うさ耳パーカー）と右の黒スーツ眼鏡女性（プロンプトのみ）](sample_one_ref_output.png)
+
+**プロンプトの内容：** カフェのテーブルに向かい合って座る2人。左側の少女（Reference C）はピンクのお団子髪・青い目・うさ耳フード付き水色パーカーと白スカート、右側の女性は黒髪ロング・赤い目・黒のフォーマルスーツ・眼鏡を着てコーヒーを飲んでいます。
+
+**仕組みと設定：**
+- `SnapRef` には Reference 1（左側の少女）のみ接続し、`image_2` は空欄（未接続）にします。
+- `SnapRefRegionMask` は `layout = left_right`、`split = 0.5`、`outside_strength = 0.0` に設定します。
+- `outside_strength = 0.0` により、マスク外（右半分）では Reference 1 の注意重みが数学的に厳密に 0.0% に完全遮断されるため、右側の人物に左側のうさ耳やパーカーの特徴が一切漏れず、プロンプトの記述どおりの黒スーツ眼鏡女性がベースモデルによって新規描画されます。
+- Pass 1 の推定ステップが不要なため、1 回のサンプリング（30 steps、約10秒）で即座に生成可能です。
+
+[生成画像](sample_one_ref_output.png) · [ワークフロー](snapref_region_mask_sample_one_ref.json) · [正確なプロンプト・設定（API JSON）](snapref_region_mask_sample_one_ref_api.json)
 
 ## 参照画像
 
