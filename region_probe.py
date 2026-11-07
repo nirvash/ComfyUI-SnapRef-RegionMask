@@ -241,6 +241,15 @@ INSTANCE_K = 4          # instances (k-means on the first INSTANCE_K embedding d
 INSTANCE_BLEND = 0.3    # share of the token's own score kept next to its instance mean
 INSTANCE_RESTARTS = 8
 
+# graph cut (segmentation_method="graph_cut"): smoothing strength on the superpixel graph, and the Phase-2
+# non-local edges added from the self-attention embedding (kept weaker than the image edges)
+# With the per-superpixel mean unary an inconsistent superpixel has a cost difference of ~0.4-1.4, so
+# NONLOCAL_WEIGHT must be of that order against lambda_smooth to ever flip anything: 0.5 = ~4 edges x sim
+# ~0.8 x 0.5 x lambda can override a weak contradiction at the default lambda=0.5. The offline graph-cut
+# experiment on the recorded probes tunes both (unit tests keep the wiring exact).
+NONLOCAL_K = 4
+NONLOCAL_WEIGHT = 0.5
+
 
 def _attach(dm, recorder, idx):
     restore = []
@@ -330,6 +339,9 @@ def _make_wrapper(recorder, step_offset=0, total_steps=0):
         if getattr(recorder, "instance_auto", False):
             recorder.instance_steps = {min(INSTANCE_AUTO_STEP, recorder.total_steps - 1)}
             recorder.instance_blocks = {INSTANCE_AUTO_BLOCK}
+        elif getattr(recorder, "instance_analysis", False):
+            recorder.instance_steps = set(INSTANCE_STEPS)
+            recorder.instance_blocks = set(INSTANCE_BLOCKS)
         recorder.progress[idx] = progress
         p = int(getattr(dm, "patch_spatial", 2))
         T = x.shape[2] if x.ndim == 5 else 1
@@ -417,9 +429,11 @@ class SnapRefRegionProbe:
                             keep_blocks=dumping or weights is not None or auto is not None,
                             keep_features=bool(f_steps), feature_steps=f_steps, feature_blocks=f_blocks)
         recorder.ref_affinity = bool(ref_affinity)
-        recorder.instance_steps = set(INSTANCE_STEPS) if dumping else set()
-        recorder.instance_blocks = set(INSTANCE_BLOCKS)
-        recorder.instance_auto = bool(instance_mask) and auto is not None and not dumping
+        # instance recordings: the automatic mask uses one embedding at the auto step / block; a pure analysis
+        # dump keeps the wide step x block grid. dump + auto mask: record exactly what the automatic mask uses,
+        # so the dump reproduces the production label offline.
+        recorder.instance_auto = bool(instance_mask) and auto is not None
+        recorder.instance_analysis = dumping and auto is None
         recorder.prompt = text   # the layout hint looks for "<person> on the left / right" here
         m = model.clone()
         self._wrap(m, _make_wrapper(recorder, step_offset, total_steps))
@@ -951,6 +965,97 @@ def slic_t(rgb, n_segments=800, compactness=10.0, iters=10):
     return ids.view(H, W) + 1
 
 
+def graph_cut_refine(image, sp, score, lambda_smooth=0.5, emb=None, token_grid=None,
+                     nonlocal_k=0, nonlocal_weight=0.1):
+    """Binary s-t min-cut over the superpixels: the (instance-voted) attention score gives per-pixel label costs
+    summed per superpixel, the image gives the joining costs. Unlike vote_t, a superpixel with a weak own score
+    follows the side whose image boundary is weaker, and a person boundary is preferred where the image actually
+    changes (lab colour jump, boundary length); strong attention evidence still wins locally.
+
+    image [H, W, 3] float 0..1, sp [H, W] long (1..n), score [H, W] signed float (> 0 person 1).
+    emb [S, D] self-attention token embedding with token_grid (gh, gw): optional Phase-2 non-local edges between
+    image-far but self-attention-close superpixels. Returns (label [H, W] uint8, info)."""
+    try:
+        import numpy as np
+        from maxflow import Graph as MaxFlow
+    except Exception as exc:
+        raise RuntimeError("[SnapRefRegionAutoMask] segmentation_method=graph_cut needs the pymaxflow package") from exc
+    dev = sp.device
+    H, W = sp.shape
+    n = int(sp.max())
+    ids = sp.reshape(-1) - 1
+    cnt = torch.zeros(n, device=dev).scatter_add_(0, ids, torch.ones(len(ids), device=dev))
+    # unary: cross-entropy of the signed score averaged per superpixel (the hand-off design: costs are per
+    # superpixel statistic, so lambda is O(1); a mean is used instead of a pixel sum to keep large flat
+    # regions from being frozen against the smoothing term)
+    z = (score / score.std(correction=0).clamp_min(1e-6)).reshape(-1).clamp(-4, 4)
+    p1 = torch.sigmoid(z).clamp(0.02, 0.98)
+    loss_1 = -p1.log()                                          # cost of labelling the pixel person 1
+    loss_2 = -(1 - p1).log()
+    d1 = torch.zeros(n, device=dev).scatter_add_(0, ids, loss_1) / cnt.clamp_min(1)
+    d2_ = torch.zeros(n, device=dev).scatter_add_(0, ids, loss_2) / cnt.clamp_min(1)
+    # image side: per-superpixel mean Lab, and length / mean Lab jump of each shared superpixel boundary
+    lab = rgb_to_lab(image.float().clamp(0, 1))
+    sums = torch.zeros(n, 3, device=dev).index_add_(0, ids, lab.reshape(-1, 3))
+    cen = sums / cnt[:, None].clamp_min(1)
+    a = torch.cat([sp[:-1].reshape(-1), sp[:, :-1].reshape(-1)])
+    b = torch.cat([sp[1:].reshape(-1), sp[:, 1:].reshape(-1)])
+    dlt = torch.cat([(lab[:-1] - lab[1:]).reshape(-1, 3), (lab[:, :-1] - lab[:, 1:]).reshape(-1, 3)])
+    keep = a != b
+    pa, pb = a[keep] - 1, b[keep] - 1
+    key = pa * n + pb
+    ukey, inv, lens = torch.unique(key, return_inverse=True, return_counts=True)
+    ua, ub = ukey // n, ukey % n
+    gsum = torch.zeros(len(ukey), device=dev).index_add_(0, inv, dlt[keep].norm(dim=1))
+    gmean = gsum / lens
+    dlab = ((cen[ua] - cen[ub]) ** 2).sum(1)
+    lf = lens.float()
+    sig_c2 = dlab.median().clamp_min(1.0)
+    sig_g = gmean.median().clamp_min(1e-3)
+    l_med = lf.median().clamp_min(1.0)
+    w = (lf / l_med) * torch.exp(-dlab / (2 * sig_c2)) * torch.exp(-gmean / sig_g) * max(float(lambda_smooth), 0.0)
+    # Phase 2 (optional): non-local edges from the self-attention embedding, weaker than local edges
+    nl_pairs = np.empty((0, 2), dtype=np.int32)
+    nl_w = np.empty(0, dtype=np.float64)
+    if emb is not None and token_grid is not None and nonlocal_k > 0 and float(lambda_smooth) > 0:
+        gh, gw = token_grid
+        spt = F.interpolate(sp[None, None].float(), size=(gh, gw), mode="nearest-exact")[0, 0].reshape(-1).long() - 1
+        e = F.normalize(emb.to(dev).float(), dim=1)
+        es = torch.zeros(n, e.shape[1], device=dev).index_add_(0, spt, e)
+        ec = torch.zeros(n, device=dev).index_add_(0, spt, torch.ones(len(spt), device=dev))
+        es = F.normalize(es / ec[:, None].clamp_min(1), dim=1)
+        sim = es @ es.T
+        adj = torch.zeros(n, n, dtype=torch.bool, device=dev)
+        adj[ua, ub] = adj[ub, ua] = True
+        adj.fill_diagonal_(True)
+        tv, ti = sim.masked_fill(adj, -1.0).topk(min(nonlocal_k, max(n - 1, 1)), dim=1)
+        scale = max(float(lambda_smooth), 0.0)
+        nlw = tv.clamp_min(0.0) * nonlocal_weight * scale
+        rows = torch.arange(n, device=dev).repeat_interleave(ti.shape[1])
+        sel = nlw.reshape(-1) > 0
+        nl_pairs = torch.stack([rows[sel], ti.reshape(-1)[sel]], dim=1).cpu().numpy().astype(np.int32)
+        nl_w = nlw.reshape(-1)[sel].cpu().numpy().astype(np.float64)
+    gf = MaxFlow[float]()                                          # pymaxflow >= 1.3: dtype factory
+    node_ids = gf.add_nodes(n)
+    d1_, d2f = d1.cpu().numpy(), d2_.cpu().numpy()
+    for i in range(n):                                             # person 1 = source side; being on the source side pays the sink capacity
+        gf.add_tedge(i, float(d2f[i]), float(d1_[i]))              # add_tedge(node, cap_source, cap_sink)
+    ua_, ub_ = ua.cpu().numpy().astype(np.intp), ub.cpu().numpy().astype(np.intp)
+    wf = w.cpu().numpy().astype(np.float64)
+    gf.add_edges(ua_, ub_, wf, wf)                                 # add_edges is bidirectional per row
+    if len(nl_pairs):
+        gf.add_edges(nl_pairs[:, 0].astype(np.intp), nl_pairs[:, 1].astype(np.intp), nl_w, nl_w)
+    flow = gf.maxflow()
+    sink_side = gf.get_grid_segments(node_ids)                     # verified: True = sink side (the docstring says otherwise)
+    lab_sp = np.where(sink_side, 1, 0).astype(np.uint8)
+    label = torch.from_numpy(lab_sp).to(dev)[ids]
+    info = {"graph_nodes": n, "graph_edges": int(len(ukey)), "mincut": float(flow),
+            "sig_c2": float(sig_c2), "sig_g": float(sig_g), "l_med": float(l_med),
+            "nonlocal_edges": int(len(nl_pairs))}
+    return label.view(H, W), info
+
+
+
 def auto_device():
     try:
         import comfy.model_management as mm
@@ -988,12 +1093,14 @@ def combined_score(att, aff, ref_weight=1.0):
     return score, {"ref_weight_used": ref_weight, "ref_means": [round(float(m1), 4), round(float(m2), 4)]}
 
 
-def auto_label(rec, image, weights, backend="gpu", source="attention", ref_weight=1.0):
+def auto_label(rec, image, weights, backend="gpu", source="attention", ref_weight=1.0,
+               segmentation_method="graph_cut", lambda_smooth=0.25, nonlocal_attention=False):
     """Pass-1 recorder + pass-1 image [H, W, 3] (0..1) -> (label [H, W] uint8, info).
     backend "gpu": torch on the sampling device (SLIC included); "cpu": numpy / skimage (the fitted reference)."""
-    if backend == "gpu" or source != "attention":
+    if backend == "gpu" or source != "attention" or segmentation_method != "existing":
         dev = auto_device() if backend == "gpu" else torch.device("cpu")
-        return _auto_label_t(rec, image, weights, dev, source, ref_weight)
+        return _auto_label_t(rec, image, weights, dev, source, ref_weight,
+                             segmentation_method, lambda_smooth, nonlocal_attention)
     import numpy as np
     from PIL import Image
     from skimage.segmentation import slic
@@ -1047,6 +1154,21 @@ class SnapRefRegionAutoMask:
                            "the person terms decide the bodies, the reference resemblance corrects parts such as hats"}),
             "ref_weight": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 10.0, "step": 0.05,
                                      "tooltip": "both: weight of the reference resemblance against the person terms"}),
+            "segmentation_method": (["existing", "graph_cut"], {
+                "default": "graph_cut",
+                "tooltip": "existing: majority vote of the attention score per superpixel; graph_cut: a binary min-cut "
+                           "over the superpixel graph (needs the pymaxflow package) - weak own scores follow the "
+                           "neighbouring side across image boundaries instead of flipping at the score sign. "
+                           "Measured better on the 29-scene GT set (max swap 11.7% -> 10.0%, no scene over 10%) "
+                           "at lambda 0.25 and about 5 ms slower"
+            }),
+            "lambda_smooth": ("FLOAT", {"default": 0.25, "min": 0.0, "max": 20.0, "step": 0.05,
+                                        "tooltip": "graph_cut: strength of the image-boundary smoothing term "
+                                                   "(0.25 best on the GT set; >= 2 starts merging whole people)"}),
+            "nonlocal_attention": ("BOOLEAN", {"default": False,
+                                               "tooltip": "graph_cut: join superpixels that the model's own self-attention "
+                                                          "links even when the image separates them (hair / occluding arms). "
+                                                          "Measured worse on the GT set at every lambda tried - off by default"}),
         }}
 
     RETURN_TYPES = ("MASK", "MASK")
@@ -1057,12 +1179,14 @@ class SnapRefRegionAutoMask:
     CATEGORY = "SnapRef"
     DESCRIPTION = "Estimates where person 1 / person 2 are in the pass-1 image; every pixel goes to one of them."
 
-    def apply(self, image, probe, weights, source="attention", ref_weight=1.0):
+    def apply(self, image, probe, weights, source="attention", ref_weight=1.0,
+              segmentation_method="graph_cut", lambda_smooth=0.25, nonlocal_attention=False):
         rec = probe["recorder"]
         if not rec.steps or rec.grid is None:
             raise RuntimeError("[SnapRefRegionAutoMask] nothing recorded; is the probe the last model node of pass 1?")
         label_img, info = auto_label(rec, image[0].float().cpu(), load_auto_weights(weights), source=source,
-                                     ref_weight=ref_weight)
+                                     ref_weight=ref_weight, segmentation_method=segmentation_method,
+                                     lambda_smooth=lambda_smooth, nonlocal_attention=nonlocal_attention)
         logging.info("[SnapRefRegionAutoMask] %s", info)
         lab = torch.from_numpy(label_img)
         if probe.get("dump_path"):
@@ -1170,7 +1294,8 @@ def fitted_terms(rec):
     return all(set(split_terms(t.casefold())) <= FITTED_TERMS for t in rec.terms)
 
 
-def _auto_label_t(rec, image, weights, device, source="attention", ref_weight=1.0):
+def _auto_label_t(rec, image, weights, device, source="attention", ref_weight=1.0,
+                  segmentation_method="existing", lambda_smooth=0.5, nonlocal_attention=False):
     order, k, key, entry, wins, f_step = _auto_parts(rec, weights)
     T, gh, gw = rec.grid
     H, W = image.shape[:2]
@@ -1196,6 +1321,18 @@ def _auto_label_t(rec, image, weights, device, source="attention", ref_weight=1.
             extra.update(more)
     score_img = upsample(score[None], H, W)[0]
     sp = slic_t(image.to(device).float().clamp(0, 1), n_segments=int(weights["slic_segments"]), compactness=10.0)
+    if segmentation_method == "graph_cut":
+        nl_emb = emb if (nonlocal_attention and source != "reference") else None
+        label_t, ginfo = graph_cut_refine(image.to(device).float().clamp(0, 1), sp, score_img,
+                                          lambda_smooth=lambda_smooth, emb=nl_emb,
+                                          token_grid=(gh, gw) if nl_emb is not None else None,
+                                          nonlocal_k=NONLOCAL_K if nl_emb is not None else 0,
+                                          nonlocal_weight=NONLOCAL_WEIGHT)
+        label_img = label_t.cpu().numpy()
+        info = {"probe_steps": k, "backend": str(device), "source": source, "segmentation": "graph_cut",
+                "lambda_smooth": lambda_smooth, **extra, **ginfo,
+                "area_1": round(float((label_img == 0).mean()), 4), "area_2": round(float((label_img == 1).mean()), 4)}
+        return label_img, info
     if emb is not None and source != "reference":
         label_img = vote_t(score_img, sp).cpu().numpy()
         info = {"probe_steps": k, "backend": str(device), "source": source, **extra,

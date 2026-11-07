@@ -14,7 +14,7 @@ Assign a region to each [SnapRef](https://github.com/ArcAnima/SnapRef) reference
 
 ## Install and use
 
-Requires ComfyUI with Anima support, the SnapRef node and adapter, an Anima model with matching text encoder and VAE, and a CUDA GPU supporting fp16/bf16.
+Requires ComfyUI with Anima support, the SnapRef node and adapter, an Anima model with matching text encoder and VAE, and a CUDA GPU supporting fp16/bf16. The automatic masks' min-cut segmentation needs `pip install pymaxflow` (Auto Mask raises a clear error without it).
 
 ```sh
 cd ComfyUI/custom_nodes
@@ -71,7 +71,7 @@ Instead of drawing regions, estimate each person's region from the generation it
 | Node | Role |
 |---|---|
 | SnapRef Region Probe | MODEL → MODEL, REGION_PROBE. Records how image tokens attend to two person terms of the prompt (`person_1` for SnapRef `image`, `person_2` for `image_2`; variants separated by `\|`). Set `auto_mask` to the weights name. With `instance_mask` (on by default) it also records which image tokens attend to each other in block 16 (one step), so a person is kept together. With `ref_affinity` on (after SnapRef Region Mask) it records which reference each image token resembles. Put it last in the model chain |
-| SnapRef Region Auto Mask | IMAGE + REGION_PROBE → `mask_1`, `mask_2` for SnapRef Region Mask. Groups the image tokens into instances by the recorded self-attention, gives each instance the person whose term it attends to, and snaps the outline to image edges (SLIC); about 0.2 s on the GPU. `source`: `attention` (person terms), `reference` (resemblance to each reference) or `both` (person terms, plus parts such as hats that resemble one reference; `ref_weight` 1) |
+| SnapRef Region Auto Mask | IMAGE + REGION_PROBE → `mask_1`, `mask_2` for SnapRef Region Mask. Groups the image tokens into instances by the recorded self-attention, gives each instance the person whose term it attends to, and snaps the outline to image edges (SLIC; then a binary min-cut over the superpixel graph by default, `segmentation_method = graph_cut`, `lambda_smooth = 0.25`, needs the `pymaxflow` package - a weak own score follows the neighbouring side across image boundaries; on our 29-image test set that cut the worst scene's swap error from 11.7% to 10.0% with no scene over 10%, for about 5 ms). `segmentation_method = existing` keeps the plain majority vote. `source`: `attention` (person terms), `reference` (resemblance to each reference) or `both` (person terms, plus parts such as hats that resemble one reference; `ref_weight` 1) |
 | SnapRef Region Auto Mask Panel | Draws the regions over the estimation image and the final image, for checking |
 
 Recommended graph (same seed, sampler, scheduler and CFG in both stages, 30 steps):

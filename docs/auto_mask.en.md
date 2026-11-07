@@ -10,9 +10,10 @@ How SnapRef Region Probe and SnapRef Region Auto Mask estimate each person's reg
 2. **Score** (Auto Mask): per block, the normalized person 1 map minus the person 2 map; the learned per-block weights add them into one score per token (> 0 means person 1). The weights were fitted to `1girl` / `1man`; for any other person terms the plain mean of the blocks is used.
 3. **Parts** (when no self-attention instances were recorded): k-means on the token features of one step (blocks 8, 12, 16) plus position, 192 parts. Each part takes the sign of its summed score, which turns the token-level speckle into coherent parts.
 4. **Pixels**: SLIC splits the estimation image into about 800 superpixels; each receives one label, so the outline follows image edges. With `source = attention`, the torch path mixes the part vote with the original token score so local evidence can survive the part vote.
-5. Output: `mask_1` (person 1) and `mask_2` (person 2). Every pixel goes to one of them, background included.
+5. **Min-cut smoothing** (default, `segmentation_method = graph_cut`, needs `pymaxflow`): the attention score gives each superpixel a person cost, its neighbours are joined with weights that vanish across image edges, and a binary min-cut decides the label. Where the score is weak the label follows the neighbouring side instead of flipping at the sign of the score; `lambda_smooth` (0.25 by default) sets the smoothing strength. `nonlocal_attention` additionally joins superpixels that the model's self-attention links (hair behind a shoulder) - measured worse on our test set, off by default. `segmentation_method = existing` keeps the plain majority vote.
+6. Output: `mask_1` (person 1) and `mask_2` (person 2). Every pixel goes to one of them, background included.
 
-The GPU path uses grid-initialized k-means with a fixed number of rounds and a torch implementation of SLIC. The CPU path (scikit-image) for `source = attention` keeps the original majority vote.
+The GPU path uses grid-initialized k-means with a fixed number of rounds and a torch implementation of SLIC. The CPU path (scikit-image) for `source = attention` with `segmentation_method = existing` keeps the original majority vote.
 
 
 ## Instances from self-attention

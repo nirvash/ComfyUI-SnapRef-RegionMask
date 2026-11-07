@@ -6,6 +6,7 @@ import types
 from pathlib import Path
 
 import torch
+import pytest
 
 comfy = types.ModuleType("comfy")
 pe = types.ModuleType("comfy.patcher_extension")
@@ -322,9 +323,13 @@ def test_auto_mask_splits_left_right_and_feature_recording():
     img[0, :, :24, 0] = 1.0
     img[0, :, 24:, 2] = 1.0
     for backend in ("cpu", "gpu"):   # gpu = torch on the sampling device (cpu torch when there is no GPU)
-        label, info = node.auto_label(rec, img[0], weights, backend=backend)
+        label, info = node.auto_label(rec, img[0], weights, backend=backend, segmentation_method="existing")
         assert info["probe_steps"] == 8 and info["feature_step"] == 3
         assert (label[:, :24] == 0).all() and (label[:, 24:] == 1).all(), backend
+    pytest.importorskip("maxflow")   # the production default is the min-cut path
+    label, info = node.auto_label(rec, img[0], weights)
+    assert info["segmentation"] == "graph_cut" and info["graph_nodes"] > 1
+    assert (label[:, :24] == 0).all() and (label[:, 24:] == 1).all()
     panel = node.SnapRefRegionAutoMaskPanel().apply(img, img, torch.from_numpy(label == 0).float()[None],
                                                     torch.from_numpy(label == 1).float()[None], caption="x")[0]
     assert panel.shape[2] == 48 * 4 and panel.shape[1] > 32
@@ -358,8 +363,8 @@ def test_reference_affinity_drives_the_auto_mask():
     img = torch.zeros(1, 32, 48, 3)
     img[0, :, :24, 0] = 1.0
     img[0, :, 24:, 2] = 1.0
-    by_attention, _ = node.auto_label(rec, img[0], weights)
-    by_reference, info = node.auto_label(rec, img[0], weights, source="reference")
+    by_attention, _ = node.auto_label(rec, img[0], weights, segmentation_method="existing")
+    by_reference, info = node.auto_label(rec, img[0], weights, source="reference", segmentation_method="existing")
     assert (by_attention[:, :24] == 1).all()                 # follows the (wrong) person-term attention
     assert info["source"] == "reference"
     assert (by_reference[:, :24] == 0).all() and (by_reference[:, 24:] == 1).all()
@@ -431,3 +436,80 @@ def test_fitted_terms_decide_the_block_weights():
     assert not node.fitted_terms(rec)
     rec.terms = ["girl on the left", "girl on the right"]
     assert not node.fitted_terms(rec)
+
+
+def test_graph_cut_separates_two_uniform_regions():
+    pytest.importorskip("maxflow")
+    torch.manual_seed(0)
+    H = W = 64
+    img = torch.ones(H, W, 3)
+    img[:, : W // 2] = torch.tensor([0.9, 0.1, 0.1])
+    img[:, W // 2:] = torch.tensor([0.1, 0.1, 0.9])
+    sp = (torch.arange(H)[:, None] // 8 * 8 + torch.arange(W)[None, :] // 8 + 1).long()
+    xs = torch.arange(W)[None, :].expand(H, W)
+    score = torch.where(xs < W // 2, 1.0, -1.0).contiguous() + 0.05 * torch.randn(H, W)
+    label, info = node.graph_cut_refine(img, sp, score)
+    assert label.shape == (H, W) and set(label.unique().tolist()) <= {0, 1}
+    assert (label[:, : W // 2] == 0).all() and (label[:, W // 2:] == 1).all()
+    assert info["graph_nodes"] == 64 and info["graph_edges"] > 0
+
+
+def test_graph_cut_uniform_scores_and_lambda_zero():
+    pytest.importorskip("maxflow")
+    torch.manual_seed(2)
+    H = W = 64
+    img = torch.full((H, W, 3), 0.5)
+    sp = (torch.arange(H)[:, None] // 8 * 8 + torch.arange(W)[None, :] // 8 + 1).long()
+    label, _ = node.graph_cut_refine(img, sp, torch.zeros(H, W))   # all-equal costs: must not raise
+    assert label.shape == (H, W) and set(label.unique().tolist()) <= {0, 1}
+    score = torch.randn(H, W)
+    plain, _ = node.graph_cut_refine(img, sp, score, lambda_smooth=0.0)
+    assert (plain == node.vote_t(score, sp)).all()                 # lambda=0 = plain per-superpixel sign
+
+
+def test_graph_cut_keeps_a_strong_unary_superpixel():
+    pytest.importorskip("maxflow")
+    H = W = 64
+    img = torch.full((H, W, 3), 0.5)
+    sp = (torch.arange(H)[:, None] // 8 * 8 + torch.arange(W)[None, :] // 8 + 1).long()
+    score = -torch.ones(H, W)
+    score[8:16, 8:16] = 30.0                                      # one very strong person-1 superpixel
+    label, _ = node.graph_cut_refine(img, sp, score, lambda_smooth=0.5)
+    keep = torch.zeros(H, W, dtype=torch.bool)
+    keep[8:16, 8:16] = True
+    assert (label[keep] == 0).all() and (label[~keep] == 1).all()
+
+
+def test_graph_cut_ignores_superpixel_numbering():
+    pytest.importorskip("maxflow")
+    torch.manual_seed(1)
+    H = W = 64
+    img = torch.rand(H, W, 3) * 0.3 + 0.35
+    sp = (torch.arange(H)[:, None] // 8 * 8 + torch.arange(W)[None, :] // 8 + 1).long()
+    score = torch.randn(H, W) * torch.linspace(-1, 1, W)[None, :]
+    base, _ = node.graph_cut_refine(img, sp, score)
+    perm = torch.randperm(int(sp.max())) + 1
+    shuffled = perm[sp - 1]
+    again, _ = node.graph_cut_refine(img, shuffled, score)
+    assert (base == again).all()
+
+
+def test_graph_cut_nonlocal_follows_self_attention():
+    pytest.importorskip("maxflow")
+    H = W = 64
+    img = torch.full((H, W, 3), 0.5)
+    sp = (torch.arange(H)[:, None] // 8 * 8 + torch.arange(W)[None, :] // 8 + 1).long()
+    xs = torch.arange(W)[None, :].expand(H, W)
+    score = torch.where(xs < W // 2, 1.0, -1.0).contiguous()
+    score[:, 40:48] = 1.0                                        # one column that disagrees with the true split
+    plain, _ = node.graph_cut_refine(img, sp, score, lambda_smooth=0.2)
+    assert (plain[:, 40:48] == 0).all()                          # without non-local edges it stays wrong
+    gh = gw = 16
+    tx = (torch.arange(gw)[None, :] * (W // gw)).expand(gh, gw)
+    emb = torch.zeros(gh * gw, 2)
+    emb[(tx < W // 2).reshape(-1), 0] = 1.0                     # self-attention clusters = the true halves
+    emb[(tx >= W // 2).reshape(-1), 1] = 1.0
+    fixed, info = node.graph_cut_refine(img, sp, score, lambda_smooth=0.2, emb=emb,
+                                        token_grid=(gh, gw), nonlocal_k=4, nonlocal_weight=10.0)
+    assert info["nonlocal_edges"] > 0
+    assert (fixed[:, : W // 2] == 0).all() and (fixed[:, W // 2:] == 1).all()
