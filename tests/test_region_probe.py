@@ -328,3 +328,56 @@ def test_auto_mask_splits_left_right_and_feature_recording():
     panel = node.SnapRefRegionAutoMaskPanel().apply(img, img, torch.from_numpy(label == 0).float()[None],
                                                     torch.from_numpy(label == 1).float()[None], caption="x")[0]
     assert panel.shape[2] == 48 * 4 and panel.shape[1] > 32
+
+
+def test_reference_affinity_drives_the_auto_mask():
+    """Person-term attention says the opposite split; source=reference follows the recorded reference shares."""
+    torch.manual_seed(0)
+    gh, gw, k = 4, 6, 8
+    S = gh * gw
+    rec = node.Recorder(["1girl", "1man"], [[0], [1]], keep_blocks=True, keep_features=True,
+                        feature_steps={3}, feature_blocks={0, 1})
+    rec.grid = (1, gh, gw)
+    left = (torch.arange(S) % gw < gw // 2).float()
+    wrong = torch.stack([1 - left, left])                   # attention: person 1 on the right
+    for idx in range(k):
+        rec.progress[idx] = idx / 30
+        for b in range(2):
+            rec.add(idx, wrong, block=b)
+            if idx == 3:
+                rec.add_feature(idx, b, torch.randn(S, 80) + 3 * left[:, None])
+            # log-sum-exp per reference [B, H, S, 1]: reference 1 stronger on the left half
+            lse1 = (4 * left - 2).view(1, 1, S, 1).repeat(1, 3, 1, 1)
+            rec.add_affinity(idx, [lse1, -lse1])
+    aff = rec.affinity_map()
+    assert aff.shape == (2, S) and torch.allclose(aff.sum(0), torch.ones(S))
+    assert (aff[0][left == 1] > 0.9).all() and (aff[0][left == 0] < 0.1).all()
+    weights = {"blocks": 2, "feature_blocks": [0, 1], "parts": 4, "position_weight": 3.0, "slic_segments": 20,
+               "probe_steps": {"8": {"windows": [[0, 8]], "feature_step": 3, "weights": [1.0, 1.0, 0.0],
+                                     "loso": {"window": "all"}}}}
+    img = torch.zeros(1, 32, 48, 3)
+    img[0, :, :24, 0] = 1.0
+    img[0, :, 24:, 2] = 1.0
+    by_attention, _ = node.auto_label(rec, img[0], weights)
+    by_reference, info = node.auto_label(rec, img[0], weights, source="reference")
+    assert (by_attention[:, :24] == 1).all()                 # follows the (wrong) person-term attention
+    assert info["source"] == "reference"
+    assert (by_reference[:, :24] == 0).all() and (by_reference[:, 24:] == 1).all()
+    empty = node.Recorder(["a", "b"], [[0], [1]])
+    try:
+        node.affinity_score(empty, 1, gh, gw, torch.device("cpu"))
+        assert False, "expected an error without recorded affinity"
+    except RuntimeError as e:
+        assert "ref_affinity" in str(e)
+
+
+def test_combined_score_flips_only_weak_person_term_regions():
+    att = torch.tensor([[3.0, 2.5, -0.2, -3.0, -2.5, -2.8]])        # token 2 weakly person 2 (a hat)
+    aff = torch.tensor([[0.60, 0.40, 0.90, 0.20, 0.25, 0.22]])      # token 1 looks a bit like reference 2, token 2 like 1
+    score, info = node.combined_score(att, aff, 1.0)
+    assert info["ref_weight_used"] == 1.0
+    assert (score[0, :3] > 0).all() and (score[0, 3:] < 0).all()   # the hat joins person 1, token 1 stays
+    same, info0 = node.combined_score(att, aff, 0.0)
+    assert ((same > 0) == (att > 0)).all()
+    flat, info1 = node.combined_score(att, torch.full_like(aff, 0.5), 1.0)
+    assert info1["ref_weight_used"] == 0.0 and torch.equal(flat, att)   # no separation: keep the person terms

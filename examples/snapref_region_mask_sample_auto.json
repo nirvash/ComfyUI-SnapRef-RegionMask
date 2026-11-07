@@ -1,15 +1,15 @@
 {
-  "id": "0edcdde9-6de7-4a84-8c73-df19aca93051",
+  "id": "7cbd86ca-b6d8-46c3-85db-ad60515971b2",
   "revision": 0,
   "last_node_id": 119,
-  "last_link_id": 51,
+  "last_link_id": 46,
   "nodes": [
     {
       "id": 4,
       "type": "SnapRef",
       "pos": [
         0,
-        2463.999634470258
+        2024
       ],
       "size": [
         420,
@@ -221,7 +221,7 @@
           "type": "MODEL",
           "links": [
             6,
-            47
+            42
           ]
         }
       ],
@@ -432,7 +432,7 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            33
+            28
           ]
         }
       ],
@@ -476,7 +476,7 @@
       "type": "LoadImage",
       "pos": [
         0,
-        1579.999826295035
+        1580
       ],
       "size": [
         420,
@@ -526,11 +526,11 @@
         "Node name for S&R": "LoadImage"
       },
       "widgets_values": [
-        "snapref_region_mask_ref_A.png",
+        "snapref_region_mask_ref_C.png",
         "image"
       ],
       "widgets_values_named": {
-        "image": "snapref_region_mask_ref_A.png",
+        "image": "snapref_region_mask_ref_C.png",
         "upload": "image"
       }
     },
@@ -539,7 +539,7 @@
       "type": "VAEDecode",
       "pos": [
         1860,
-        1043.9998517717634
+        1044
       ],
       "size": [
         420,
@@ -568,8 +568,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            17,
-            30
+            17
           ]
         }
       ],
@@ -582,7 +581,7 @@
       "type": "CLIPTextEncode",
       "pos": [
         0,
-        701.9999115807669
+        702
       ],
       "size": [
         420,
@@ -615,8 +614,8 @@
           "type": "CONDITIONING",
           "links": [
             14,
-            22,
-            38
+            21,
+            33
           ]
         }
       ],
@@ -624,10 +623,10 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress"
+        "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
       ],
       "widgets_values_named": {
-        "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress"
+        "text": "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
       }
     },
     {
@@ -635,7 +634,7 @@
       "type": "CLIPTextEncode",
       "pos": [
         0,
-        1021.9998271124703
+        1022
       ],
       "size": [
         420,
@@ -668,8 +667,8 @@
           "type": "CONDITIONING",
           "links": [
             15,
-            23,
-            39
+            22,
+            34
           ]
         }
       ],
@@ -688,7 +687,7 @@
       "type": "VAELoader",
       "pos": [
         0,
-        519.9999468667166
+        520
       ],
       "size": [
         420,
@@ -716,8 +715,8 @@
           "links": [
             3,
             10,
-            26,
-            46
+            25,
+            41
           ]
         }
       ],
@@ -736,7 +735,7 @@
       "type": "KSampler",
       "pos": [
         1860,
-        661.9999204363141
+        662
       ],
       "size": [
         420,
@@ -840,7 +839,7 @@
         "Node name for S&R": "KSampler"
       },
       "widgets_values": [
-        20261103504,
+        20261107211,
         "fixed",
         30,
         4,
@@ -849,7 +848,7 @@
         1
       ],
       "widgets_values_named": {
-        "seed": 20261103504,
+        "seed": 20261107211,
         "control_after_generate": "fixed",
         "steps": 30,
         "cfg": 4,
@@ -863,7 +862,7 @@
       "type": "EmptyLatentImage",
       "pos": [
         0,
-        1341.999817575727
+        1342
       ],
       "size": [
         420,
@@ -908,8 +907,8 @@
           "type": "LATENT",
           "links": [
             16,
-            24,
-            44
+            23,
+            39
           ]
         }
       ],
@@ -969,7 +968,7 @@
           "links": [
             1,
             18,
-            35
+            30
           ]
         }
       ],
@@ -990,7 +989,7 @@
       "type": "CLIPLoader",
       "pos": [
         0,
-        285.9999643053327
+        286
       ],
       "size": [
         420,
@@ -1039,7 +1038,7 @@
             11,
             12,
             19,
-            34
+            29
           ]
         }
       ],
@@ -1062,7 +1061,7 @@
       "type": "SaveImage",
       "pos": [
         1860,
-        1217.9998465946742
+        1218
       ],
       "size": [
         420,
@@ -1110,7 +1109,7 @@
       "type": "LoadImage",
       "pos": [
         0,
-        2021.9997303826467
+        1802
       ],
       "size": [
         420,
@@ -1160,11 +1159,11 @@
         "Node name for S&R": "LoadImage"
       },
       "widgets_values": [
-        "snapref_region_mask_ref_B.png",
+        "snapref_region_mask_ref_D.png",
         "image"
       ],
       "widgets_values_named": {
-        "image": "snapref_region_mask_ref_B.png",
+        "image": "snapref_region_mask_ref_D.png",
         "upload": "image"
       }
     },
@@ -1177,7 +1176,7 @@
       ],
       "size": [
         420,
-        296
+        320
       ],
       "flags": {},
       "order": 11,
@@ -1278,6 +1277,16 @@
             "name": "total_steps"
           },
           "link": null
+        },
+        {
+          "localized_name": "ref_affinity",
+          "name": "ref_affinity",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "ref_affinity"
+          },
+          "link": null
         }
       ],
       "outputs": [
@@ -1286,7 +1295,7 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            21
+            20
           ]
         },
         {
@@ -1294,7 +1303,7 @@
           "name": "REGION_PROBE",
           "type": "REGION_PROBE",
           "links": [
-            28
+            27
           ]
         }
       ],
@@ -1303,72 +1312,26 @@
         "Node name for S&R": "SnapRefRegionProbe"
       },
       "widgets_values": [
-        "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+        "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
         "girl on the left",
         "girl on the right",
         "none",
         "",
         "hakushi_anima_gt_v1",
         0,
-        0
+        0,
+        false
       ],
       "widgets_values_named": {
-        "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+        "text": "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
         "person_1": "girl on the left",
         "person_2": "girl on the right",
         "block_weights": "none",
         "dump_path": "",
         "auto_mask": "hakushi_anima_gt_v1",
         "step_offset": 0,
-        "total_steps": 0
-      }
-    },
-    {
-      "id": 92,
-      "type": "SaveImage",
-      "pos": [
-        1860,
-        1727.9998540878296
-      ],
-      "size": [
-        420,
-        58
-      ],
-      "flags": {},
-      "order": 28,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "画像",
-          "name": "images",
-          "type": "IMAGE",
-          "link": 20
-        },
-        {
-          "localized_name": "ファイル名_プレフィックス",
-          "name": "filename_prefix",
-          "type": "STRING",
-          "widget": {
-            "name": "filename_prefix"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "images",
-          "name": "images",
-          "type": "IMAGE",
-          "links": null
-        }
-      ],
-      "title": "Save panel",
-      "properties": {},
-      "widgets_values": [
-        "snapref_region_auto_mask_panel"
-      ],
-      "widgets_values_named": {
-        "filename_prefix": "snapref_region_auto_mask_panel"
+        "total_steps": 0,
+        "ref_affinity": false
       }
     },
     {
@@ -1376,7 +1339,7 @@
       "type": "KSamplerAdvanced",
       "pos": [
         620,
-        585.999902997698
+        614
       ],
       "size": [
         420,
@@ -1390,25 +1353,25 @@
           "localized_name": "モデル",
           "name": "model",
           "type": "MODEL",
-          "link": 21
+          "link": 20
         },
         {
           "localized_name": "ポジティブ",
           "name": "positive",
           "type": "CONDITIONING",
-          "link": 22
+          "link": 21
         },
         {
           "localized_name": "ネガティブ",
           "name": "negative",
           "type": "CONDITIONING",
-          "link": 23
+          "link": 22
         },
         {
           "localized_name": "潜在画像",
           "name": "latent_image",
           "type": "LATENT",
-          "link": 24
+          "link": 23
         },
         {
           "localized_name": "ノイズ追加",
@@ -1498,7 +1461,7 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            25
+            24
           ]
         }
       ],
@@ -1508,7 +1471,7 @@
       },
       "widgets_values": [
         "enable",
-        20261103504,
+        20261107211,
         "fixed",
         30,
         4,
@@ -1520,7 +1483,7 @@
       ],
       "widgets_values_named": {
         "add_noise": "enable",
-        "noise_seed": 20261103504,
+        "noise_seed": 20261107211,
         "control_after_generate": "fixed",
         "steps": 30,
         "cfg": 4,
@@ -1536,7 +1499,7 @@
       "type": "VAEDecode",
       "pos": [
         620,
-        1039.9998256138392
+        1068
       ],
       "size": [
         420,
@@ -1550,13 +1513,13 @@
           "localized_name": "サンプル",
           "name": "samples",
           "type": "LATENT",
-          "link": 25
+          "link": 24
         },
         {
           "localized_name": "vae",
           "name": "vae",
           "type": "VAE",
-          "link": 26
+          "link": 25
         }
       ],
       "outputs": [
@@ -1565,7 +1528,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            27
+            26
           ]
         }
       ],
@@ -1579,11 +1542,11 @@
       "type": "SnapRefRegionAutoMask",
       "pos": [
         620,
-        1213.9997380120412
+        1242
       ],
       "size": [
         420,
-        78
+        126
       ],
       "flags": {},
       "order": 16,
@@ -1593,13 +1556,13 @@
           "localized_name": "image",
           "name": "image",
           "type": "IMAGE",
-          "link": 27
+          "link": 26
         },
         {
           "localized_name": "probe",
           "name": "probe",
           "type": "REGION_PROBE",
-          "link": 28
+          "link": 27
         },
         {
           "localized_name": "weights",
@@ -1607,6 +1570,26 @@
           "type": "COMBO",
           "widget": {
             "name": "weights"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "source",
+          "name": "source",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "source"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_weight",
+          "name": "ref_weight",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "ref_weight"
           },
           "link": null
         }
@@ -1634,81 +1617,14 @@
         "Node name for S&R": "SnapRefRegionAutoMask"
       },
       "widgets_values": [
-        "hakushi_anima_gt_v1"
+        "hakushi_anima_gt_v1",
+        "attention",
+        1
       ],
       "widgets_values_named": {
-        "weights": "hakushi_anima_gt_v1"
-      }
-    },
-    {
-      "id": 96,
-      "type": "SnapRefRegionAutoMaskPanel",
-      "pos": [
-        1860,
-        1407.9998636245728
-      ],
-      "size": [
-        420,
-        200
-      ],
-      "flags": {},
-      "order": 27,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "probe_image",
-          "name": "probe_image",
-          "type": "IMAGE",
-          "link": 29
-        },
-        {
-          "localized_name": "final_image",
-          "name": "final_image",
-          "type": "IMAGE",
-          "link": 30
-        },
-        {
-          "localized_name": "mask_1",
-          "name": "mask_1",
-          "type": "MASK",
-          "link": 31
-        },
-        {
-          "localized_name": "mask_2",
-          "name": "mask_2",
-          "type": "MASK",
-          "link": 32
-        },
-        {
-          "localized_name": "caption",
-          "name": "caption",
-          "shape": 7,
-          "type": "STRING",
-          "widget": {
-            "name": "caption"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "panel",
-          "name": "panel",
-          "type": "IMAGE",
-          "links": [
-            20
-          ]
-        }
-      ],
-      "title": "Auto Mask Panel (check image)",
-      "properties": {
-        "Node name for S&R": "SnapRefRegionAutoMaskPanel"
-      },
-      "widgets_values": [
-        "seed 20261103504   1216x832   30 steps   hakushiMixAnima_v10.safetensors   refs snapref_region_mask_ref_A.png,snapref_region_mask_ref_B.png\nprompt: masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress\nauto mask: pass 1 4 steps, weights hakushi_anima_gt_v1, refined after 8 SnapRef steps"
-      ],
-      "widgets_values_named": {
-        "caption": "seed 20261103504   1216x832   30 steps   hakushiMixAnima_v10.safetensors   refs snapref_region_mask_ref_A.png,snapref_region_mask_ref_B.png\nprompt: masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress\nauto mask: pass 1 4 steps, weights hakushi_anima_gt_v1, refined after 8 SnapRef steps"
+        "weights": "hakushi_anima_gt_v1",
+        "source": "attention",
+        "ref_weight": 1
       }
     },
     {
@@ -1716,11 +1632,11 @@
       "type": "SnapRefRegionProbe",
       "pos": [
         1240,
-        661.9999204363141
+        662
       ],
       "size": [
         420,
-        296
+        320
       ],
       "flags": {},
       "order": 18,
@@ -1730,13 +1646,13 @@
           "localized_name": "model",
           "name": "model",
           "type": "MODEL",
-          "link": 33
+          "link": 28
         },
         {
           "localized_name": "clip",
           "name": "clip",
           "type": "CLIP",
-          "link": 34
+          "link": 29
         },
         {
           "localized_name": "continue_from",
@@ -1821,6 +1737,16 @@
             "name": "total_steps"
           },
           "link": null
+        },
+        {
+          "localized_name": "ref_affinity",
+          "name": "ref_affinity",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "ref_affinity"
+          },
+          "link": null
         }
       ],
       "outputs": [
@@ -1829,7 +1755,7 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            37
+            32
           ]
         },
         {
@@ -1837,33 +1763,35 @@
           "name": "REGION_PROBE",
           "type": "REGION_PROBE",
           "links": [
-            51
+            46
           ]
         }
       ],
-      "title": "Region Probe (refine)",
+      "title": "Region Probe (refine, ref_affinity on)",
       "properties": {
         "Node name for S&R": "SnapRefRegionProbe"
       },
       "widgets_values": [
-        "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+        "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
         "girl on the left",
         "girl on the right",
         "none",
         "",
         "hakushi_anima_gt_v1",
         0,
-        0
+        0,
+        true
       ],
       "widgets_values_named": {
-        "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+        "text": "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
         "person_1": "girl on the left",
         "person_2": "girl on the right",
         "block_weights": "none",
         "dump_path": "",
         "auto_mask": "hakushi_anima_gt_v1",
         "step_offset": 0,
-        "total_steps": 0
+        "total_steps": 0,
+        "ref_affinity": true
       }
     },
     {
@@ -1871,7 +1799,7 @@
       "type": "BasicScheduler",
       "pos": [
         1240,
-        1167.9998534066335
+        1196
       ],
       "size": [
         420,
@@ -1885,7 +1813,7 @@
           "localized_name": "モデル",
           "name": "model",
           "type": "MODEL",
-          "link": 35
+          "link": 30
         },
         {
           "localized_name": "スケジューラ",
@@ -1921,7 +1849,7 @@
           "name": "SIGMAS",
           "type": "SIGMAS",
           "links": [
-            36
+            31
           ]
         }
       ],
@@ -1944,7 +1872,7 @@
       "type": "SplitSigmas",
       "pos": [
         1240,
-        1405.9997122628347
+        1434
       ],
       "size": [
         420,
@@ -1958,7 +1886,7 @@
           "localized_name": "シグマ",
           "name": "sigmas",
           "type": "SIGMAS",
-          "link": 36
+          "link": 31
         },
         {
           "localized_name": "ステップ",
@@ -1976,7 +1904,7 @@
           "name": "high_sigmas",
           "type": "SIGMAS",
           "links": [
-            43
+            38
           ]
         },
         {
@@ -2001,7 +1929,7 @@
       "type": "KSamplerSelect",
       "pos": [
         1240,
-        1607.9998077665055
+        1636
       ],
       "size": [
         420,
@@ -2027,7 +1955,7 @@
           "name": "SAMPLER",
           "type": "SAMPLER",
           "links": [
-            42
+            37
           ]
         }
       ],
@@ -2046,7 +1974,7 @@
       "type": "RandomNoise",
       "pos": [
         1240,
-        1789.9997724805557
+        1818
       ],
       "size": [
         420,
@@ -2072,7 +2000,7 @@
           "name": "NOISE",
           "type": "NOISE",
           "links": [
-            40
+            35
           ]
         }
       ],
@@ -2080,11 +2008,11 @@
         "Node name for S&R": "RandomNoise"
       },
       "widgets_values": [
-        20261103504,
+        20261107211,
         "fixed"
       ],
       "widgets_values_named": {
-        "noise_seed": 20261103504,
+        "noise_seed": 20261107211,
         "control_after_generate": "fixed"
       }
     },
@@ -2093,7 +2021,7 @@
       "type": "CFGGuider",
       "pos": [
         1240,
-        1991.9997106279643
+        2020
       ],
       "size": [
         420,
@@ -2107,19 +2035,19 @@
           "localized_name": "モデル",
           "name": "model",
           "type": "MODEL",
-          "link": 37
+          "link": 32
         },
         {
           "localized_name": "ポジティブ",
           "name": "positive",
           "type": "CONDITIONING",
-          "link": 38
+          "link": 33
         },
         {
           "localized_name": "ネガティブ",
           "name": "negative",
           "type": "CONDITIONING",
-          "link": 39
+          "link": 34
         },
         {
           "localized_name": "cfg",
@@ -2137,7 +2065,7 @@
           "name": "GUIDER",
           "type": "GUIDER",
           "links": [
-            41
+            36
           ]
         }
       ],
@@ -2156,7 +2084,7 @@
       "type": "SamplerCustomAdvanced",
       "pos": [
         1240,
-        2213.9996147155757
+        2242
       ],
       "size": [
         420,
@@ -2170,31 +2098,31 @@
           "localized_name": "ノイズ",
           "name": "noise",
           "type": "NOISE",
-          "link": 40
+          "link": 35
         },
         {
           "localized_name": "ガイダー",
           "name": "guider",
           "type": "GUIDER",
-          "link": 41
+          "link": 36
         },
         {
           "localized_name": "サンプラー",
           "name": "sampler",
           "type": "SAMPLER",
-          "link": 42
+          "link": 37
         },
         {
           "localized_name": "シグマ",
           "name": "sigmas",
           "type": "SIGMAS",
-          "link": 43
+          "link": 38
         },
         {
           "localized_name": "潜在イメージ",
           "name": "latent_image",
           "type": "LATENT",
-          "link": 44
+          "link": 39
         }
       ],
       "outputs": [
@@ -2209,7 +2137,7 @@
           "name": "denoised_output",
           "type": "LATENT",
           "links": [
-            45
+            40
           ]
         }
       ],
@@ -2223,7 +2151,7 @@
       "type": "VAEDecode",
       "pos": [
         1240,
-        2447.99959727696
+        2476
       ],
       "size": [
         420,
@@ -2237,13 +2165,13 @@
           "localized_name": "サンプル",
           "name": "samples",
           "type": "LATENT",
-          "link": 45
+          "link": 40
         },
         {
           "localized_name": "vae",
           "name": "vae",
           "type": "VAE",
-          "link": 46
+          "link": 41
         }
       ],
       "outputs": [
@@ -2252,8 +2180,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            29,
-            50
+            45
           ]
         }
       ],
@@ -2281,21 +2208,21 @@
           "localized_name": "model",
           "name": "model",
           "type": "MODEL",
-          "link": 47
+          "link": 42
         },
         {
           "localized_name": "mask_1",
           "name": "mask_1",
           "shape": 7,
           "type": "MASK",
-          "link": 48
+          "link": 43
         },
         {
           "localized_name": "mask_2",
           "name": "mask_2",
           "shape": 7,
           "type": "MASK",
-          "link": 49
+          "link": 44
         },
         {
           "localized_name": "layout",
@@ -2473,11 +2400,11 @@
       "type": "SnapRefRegionAutoMask",
       "pos": [
         1240,
-        2621.999509675162
+        2650
       ],
       "size": [
         420,
-        78
+        126
       ],
       "flags": {},
       "order": 22,
@@ -2487,13 +2414,13 @@
           "localized_name": "image",
           "name": "image",
           "type": "IMAGE",
-          "link": 50
+          "link": 45
         },
         {
           "localized_name": "probe",
           "name": "probe",
           "type": "REGION_PROBE",
-          "link": 51
+          "link": 46
         },
         {
           "localized_name": "weights",
@@ -2501,6 +2428,26 @@
           "type": "COMBO",
           "widget": {
             "name": "weights"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "source",
+          "name": "source",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "source"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "ref_weight",
+          "name": "ref_weight",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "ref_weight"
           },
           "link": null
         }
@@ -2511,8 +2458,7 @@
           "name": "mask_1",
           "type": "MASK",
           "links": [
-            31,
-            48
+            43
           ]
         },
         {
@@ -2520,20 +2466,23 @@
           "name": "mask_2",
           "type": "MASK",
           "links": [
-            32,
-            49
+            44
           ]
         }
       ],
-      "title": "Auto Mask (refined masks)",
+      "title": "Auto Mask (refined masks, source both)",
       "properties": {
         "Node name for S&R": "SnapRefRegionAutoMask"
       },
       "widgets_values": [
-        "hakushi_anima_gt_v1"
+        "hakushi_anima_gt_v1",
+        "both",
+        1
       ],
       "widgets_values_named": {
-        "weights": "hakushi_anima_gt_v1"
+        "weights": "hakushi_anima_gt_v1",
+        "source": "both",
+        "ref_weight": 1
       }
     }
   ],
@@ -2692,14 +2641,6 @@
     ],
     [
       20,
-      96,
-      0,
-      92,
-      0,
-      "IMAGE"
-    ],
-    [
-      21,
       90,
       0,
       93,
@@ -2707,7 +2648,7 @@
       "MODEL"
     ],
     [
-      22,
+      21,
       11,
       0,
       93,
@@ -2715,7 +2656,7 @@
       "CONDITIONING"
     ],
     [
-      23,
+      22,
       12,
       0,
       93,
@@ -2723,7 +2664,7 @@
       "CONDITIONING"
     ],
     [
-      24,
+      23,
       28,
       0,
       93,
@@ -2731,7 +2672,7 @@
       "LATENT"
     ],
     [
-      25,
+      24,
       93,
       0,
       94,
@@ -2739,7 +2680,7 @@
       "LATENT"
     ],
     [
-      26,
+      25,
       15,
       0,
       94,
@@ -2747,7 +2688,7 @@
       "VAE"
     ],
     [
-      27,
+      26,
       94,
       0,
       95,
@@ -2755,7 +2696,7 @@
       "IMAGE"
     ],
     [
-      28,
+      27,
       90,
       1,
       95,
@@ -2763,39 +2704,7 @@
       "REGION_PROBE"
     ],
     [
-      29,
-      117,
-      0,
-      96,
-      0,
-      "IMAGE"
-    ],
-    [
-      30,
-      8,
-      0,
-      96,
-      1,
-      "IMAGE"
-    ],
-    [
-      31,
-      119,
-      0,
-      96,
-      2,
-      "MASK"
-    ],
-    [
-      32,
-      119,
-      1,
-      96,
-      3,
-      "MASK"
-    ],
-    [
-      33,
+      28,
       5,
       0,
       110,
@@ -2803,7 +2712,7 @@
       "MODEL"
     ],
     [
-      34,
+      29,
       45,
       0,
       110,
@@ -2811,7 +2720,7 @@
       "CLIP"
     ],
     [
-      35,
+      30,
       44,
       0,
       111,
@@ -2819,7 +2728,7 @@
       "MODEL"
     ],
     [
-      36,
+      31,
       111,
       0,
       112,
@@ -2827,7 +2736,7 @@
       "SIGMAS"
     ],
     [
-      37,
+      32,
       110,
       0,
       115,
@@ -2835,7 +2744,7 @@
       "MODEL"
     ],
     [
-      38,
+      33,
       11,
       0,
       115,
@@ -2843,7 +2752,7 @@
       "CONDITIONING"
     ],
     [
-      39,
+      34,
       12,
       0,
       115,
@@ -2851,7 +2760,7 @@
       "CONDITIONING"
     ],
     [
-      40,
+      35,
       114,
       0,
       116,
@@ -2859,7 +2768,7 @@
       "NOISE"
     ],
     [
-      41,
+      36,
       115,
       0,
       116,
@@ -2867,7 +2776,7 @@
       "GUIDER"
     ],
     [
-      42,
+      37,
       113,
       0,
       116,
@@ -2875,7 +2784,7 @@
       "SAMPLER"
     ],
     [
-      43,
+      38,
       112,
       0,
       116,
@@ -2883,7 +2792,7 @@
       "SIGMAS"
     ],
     [
-      44,
+      39,
       28,
       0,
       116,
@@ -2891,7 +2800,7 @@
       "LATENT"
     ],
     [
-      45,
+      40,
       116,
       1,
       117,
@@ -2899,7 +2808,7 @@
       "LATENT"
     ],
     [
-      46,
+      41,
       15,
       0,
       117,
@@ -2907,7 +2816,7 @@
       "VAE"
     ],
     [
-      47,
+      42,
       4,
       0,
       118,
@@ -2915,7 +2824,7 @@
       "MODEL"
     ],
     [
-      48,
+      43,
       119,
       0,
       118,
@@ -2923,7 +2832,7 @@
       "MASK"
     ],
     [
-      49,
+      44,
       119,
       1,
       118,
@@ -2931,7 +2840,7 @@
       "MASK"
     ],
     [
-      50,
+      45,
       117,
       0,
       119,
@@ -2939,7 +2848,7 @@
       "IMAGE"
     ],
     [
-      51,
+      46,
       110,
       1,
       119,
@@ -2955,7 +2864,7 @@
         590,
         0,
         480,
-        1439.999668257577
+        1524
       ],
       "color": "#3f789e",
       "flags": {}
@@ -2967,7 +2876,7 @@
         1210,
         0,
         480,
-        2847.9994399206976
+        2932
       ],
       "color": "#3f789e",
       "flags": {}
@@ -2979,7 +2888,7 @@
         1830,
         0,
         480,
-        1917.9998711177282
+        1408
       ],
       "color": "#3f789e",
       "flags": {}

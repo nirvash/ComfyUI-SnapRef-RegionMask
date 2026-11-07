@@ -119,6 +119,8 @@ class Recorder:
         self.total_steps = None
         self.last_idx = None
         self.multi_row_warned = False
+        self.affinity = {}       # step index -> [R, S] float32: share of each reference, summed over blocks
+        self.aff_counts = {}     # step index -> blocks summed
 
     def add(self, idx, share, block=None):
         share = share.detach().float().cpu()
@@ -129,6 +131,24 @@ class Recorder:
         self.counts[idx] = self.counts.get(idx, 0) + 1
         if block is not None:
             self.blocks[(idx, block)] = share.half()
+
+    def add_affinity(self, idx, lses):
+        """lses: per reference [B, H, S, 1] log-sum-exp of the attention logits to its keys (no region bias).
+        Keeps the softmax share of each reference per token, mean over heads, first row."""
+        with torch.no_grad():
+            L = torch.stack([l[0, :, :, 0].float() for l in lses])        # [R, H, S]
+            share = L.softmax(0).mean(1).cpu()                             # [R, S]
+        if idx in self.affinity:
+            self.affinity[idx] += share
+        else:
+            self.affinity[idx] = share
+        self.aff_counts[idx] = self.aff_counts.get(idx, 0) + 1
+
+    def affinity_map(self):
+        """[R, S]: mean reference share over the recorded steps, or None."""
+        if not self.affinity:
+            return None
+        return sum(self.affinity[i] / self.aff_counts[i] for i in self.affinity) / len(self.affinity)
 
     def add_feature(self, idx, block, x):
         """x [S, D] token features after self-attention (the cross-attention input): keep a PCA projection."""
@@ -158,6 +178,9 @@ class Recorder:
                 feats[f_steps.index(i), f_blocks.index(b)] = f.numpy()
             extra = {'features': feats, 'feature_steps': np.array(f_steps), 'feature_blocks': np.array(f_blocks)}
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        aff = self.affinity_map()
+        if aff is not None:
+            extra['affinity'] = aff.numpy().astype(np.float32)
         np.savez_compressed(path, per_block=per_block, steps=np.array(steps),
                             progress=np.array([self.progress[i] for i in steps]),
                             grid=np.array(self.grid), terms=np.array(self.terms), **extra)
@@ -174,6 +197,7 @@ class Recorder:
 
 
 _STATE = {"recorder": None, "fingerprint": None}
+AFFINITY_KEY = "snapref_ref_affinity"   # same key as SnapRef Region Mask reads
 # analysis dumps: token features (self-attention output) of these steps / blocks, PCA to FEATURE_DIM
 FEATURE_STEPS = (3, 8, 12, 20, 28)
 FEATURE_BLOCKS = (4, 8, 12, 16, 20, 24)
@@ -252,6 +276,8 @@ def _make_wrapper(recorder, step_offset=0, total_steps=0):
         T = x.shape[2] if x.ndim == 5 else 1
         recorder.grid = (T, math.ceil(x.shape[-2] / p), math.ceil(x.shape[-1] / p))
         _STATE["fingerprint"] = context[rows[0]].detach()
+        if getattr(recorder, "ref_affinity", False):
+            kwargs["transformer_options"] = {**opts, AFFINITY_KEY: lambda block, lses, _i=idx: recorder.add_affinity(_i, lses)}
         restore = _attach(dm, recorder, idx)
         try:
             return executor(x, timesteps, context, *args, **kwargs)
@@ -287,6 +313,9 @@ class SnapRefRegionProbe:
                                     "tooltip": "segmented sampling: index of this segment's first step in the whole schedule"}),
             "total_steps": ("INT", {"default": 0, "min": 0, "max": 10000,
                                     "tooltip": "segmented sampling: steps of the whole schedule (0 = this sampler's)"}),
+            "ref_affinity": ("BOOLEAN", {"default": False,
+                                         "tooltip": "also record how strongly each image token attends to each SnapRef "
+                                                    "reference (needs SnapRef Region Mask before this probe)"}),
         }}
 
     RETURN_TYPES = ("MODEL", "REGION_PROBE")
@@ -295,7 +324,7 @@ class SnapRefRegionProbe:
     DESCRIPTION = "Records where the image attends to the person 1 / person 2 terms during sampling."
 
     def apply(self, model, clip, text, person_1, person_2, block_weights="none", dump_path="", auto_mask="none",
-              continue_from=None, step_offset=0, total_steps=0):
+              continue_from=None, step_offset=0, total_steps=0, ref_affinity=False):
         if continue_from is not None:
             m = model.clone()
             self._wrap(m, _make_wrapper(continue_from["recorder"], step_offset, total_steps))
@@ -324,6 +353,7 @@ class SnapRefRegionProbe:
         recorder = Recorder(terms, positions, n_keys=len(prompt_ids),
                             keep_blocks=dumping or weights is not None or auto is not None,
                             keep_features=bool(f_steps), feature_steps=f_steps, feature_blocks=f_blocks)
+        recorder.ref_affinity = bool(ref_affinity)
         m = model.clone()
         self._wrap(m, _make_wrapper(recorder, step_offset, total_steps))
         return (m, {"recorder": recorder, "prompt_tokens": len(prompt_ids), "dump_path": dump_path.strip(),
@@ -848,11 +878,36 @@ def auto_windows(k, mode):
     return {"all": [(0, k)], "tail": [tail], "both": [(0, k), tail]}[mode]
 
 
-def auto_label(rec, image, weights, backend="gpu"):
+def affinity_score(rec, T, gh, gw, device):
+    """[gh, gw] score (> 0 person 1 = reference 1) from the reference affinity: share of reference 1 minus 0.5."""
+    aff = rec.affinity_map()
+    if aff is None:
+        raise RuntimeError("[SnapRefRegionAutoMask] no reference affinity recorded; set ref_affinity on the probe "
+                           "of a SnapRef + SnapRef Region Mask pass")
+    return (aff[0].view(T, gh, gw)[0] - 0.5).to(device)
+
+
+def combined_score(att, aff, ref_weight=1.0):
+    """att [gh, gw] person-term score (> 0 person 1); aff [gh, gw] share of reference 1. The affinity is centred per
+    image between its means over the provisional person 1 / person 2 regions (att > 0 / <= 0) and scaled so those
+    means sit at +1 / -1; the person-term score is scaled by its spread. Returns (score, info)."""
+    one = att > 0
+    if one.all() or (~one).all():
+        return att, {"ref_weight_used": 0.0}
+    m1, m2 = aff[one].mean(), aff[~one].mean()
+    if not m1 > m2:   # the references do not separate the provisional regions: keep the person-term score
+        return att, {"ref_weight_used": 0.0, "ref_means": [round(float(m1), 4), round(float(m2), 4)]}
+    d = ((aff - (m1 + m2) / 2) / ((m1 - m2) / 2)).clamp(-3, 3)
+    score = att / att.std().clamp_min(1e-6) + ref_weight * d
+    return score, {"ref_weight_used": ref_weight, "ref_means": [round(float(m1), 4), round(float(m2), 4)]}
+
+
+def auto_label(rec, image, weights, backend="gpu", source="attention", ref_weight=1.0):
     """Pass-1 recorder + pass-1 image [H, W, 3] (0..1) -> (label [H, W] uint8, info).
     backend "gpu": torch on the sampling device (SLIC included); "cpu": numpy / skimage (the fitted reference)."""
-    if backend == "gpu":
-        return _auto_label_t(rec, image, weights, auto_device())
+    if backend == "gpu" or source != "attention":
+        dev = auto_device() if backend == "gpu" else torch.device("cpu")
+        return _auto_label_t(rec, image, weights, dev, source, ref_weight)
     import numpy as np
     from PIL import Image
     from skimage.segmentation import slic
@@ -898,6 +953,14 @@ class SnapRefRegionAutoMask:
             "image": ("IMAGE", {"tooltip": "the decoded image the probe recorded (a short pass 1, or the x0 of a partial SnapRef pass)"}),
             "probe": ("REGION_PROBE", {"tooltip": "the probe that wrapped the pass-1 sampler (auto_mask set)"}),
             "weights": (names, {"default": names[0]}),
+        }, "optional": {
+            "source": (["attention", "reference", "both"], {
+                "default": "attention",
+                "tooltip": "attention: how the image attends to the person terms of the prompt; reference: which SnapRef "
+                           "reference each image token resembles (probe with ref_affinity on a SnapRef pass); both: "
+                           "the person terms decide the bodies, the reference resemblance corrects parts such as hats"}),
+            "ref_weight": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 10.0, "step": 0.05,
+                                     "tooltip": "both: weight of the reference resemblance against the person terms"}),
         }}
 
     RETURN_TYPES = ("MASK", "MASK")
@@ -908,11 +971,12 @@ class SnapRefRegionAutoMask:
     CATEGORY = "SnapRef"
     DESCRIPTION = "Estimates where person 1 / person 2 are in the pass-1 image; every pixel goes to one of them."
 
-    def apply(self, image, probe, weights):
+    def apply(self, image, probe, weights, source="attention", ref_weight=1.0):
         rec = probe["recorder"]
         if not rec.steps or rec.grid is None:
             raise RuntimeError("[SnapRefRegionAutoMask] nothing recorded; is the probe the last model node of pass 1?")
-        label_img, info = auto_label(rec, image[0].float().cpu(), load_auto_weights(weights))
+        label_img, info = auto_label(rec, image[0].float().cpu(), load_auto_weights(weights), source=source,
+                                     ref_weight=ref_weight)
         logging.info("[SnapRefRegionAutoMask] %s", info)
         lab = torch.from_numpy(label_img)
         if probe.get("dump_path"):
@@ -971,12 +1035,19 @@ def _auto_parts(rec, weights):
     return order, k, key, entry, wins, f_step
 
 
-def _auto_label_t(rec, image, weights, device):
+def _auto_label_t(rec, image, weights, device, source="attention", ref_weight=1.0):
     order, k, key, entry, wins, f_step = _auto_parts(rec, weights)
     T, gh, gw = rec.grid
     H, W = image.shape[:2]
-    feats = torch.cat([block_features(rec, order[a:b], T, gh, gw, device) for a, b in wins])
-    score = weighted_score(feats, torch.tensor(entry["weights"], dtype=torch.float32, device=device))
+    extra = {}
+    if source == "reference":
+        score = affinity_score(rec, T, gh, gw, device)
+    else:
+        feats = torch.cat([block_features(rec, order[a:b], T, gh, gw, device) for a, b in wins])
+        score = weighted_score(feats, torch.tensor(entry["weights"], dtype=torch.float32, device=device))
+        if source == "both":
+            aff = affinity_score(rec, T, gh, gw, device) + 0.5
+            score, extra = combined_score(score, aff, ref_weight)
     score_img = upsample(score[None], H, W)[0]
     parts = token_parts_t([rec.features[(f_step, b)] for b in weights["feature_blocks"]], gh, gw,
                           int(weights["parts"]), float(weights["position_weight"]), device)
@@ -985,7 +1056,7 @@ def _auto_label_t(rec, image, weights, device):
     sp = slic_t(image.to(device).float().clamp(0, 1), n_segments=int(weights["slic_segments"]), compactness=10.0)
     label_img = vote_t(torch.where(coarse == 0, 1.0, -1.0), sp).cpu().numpy()
     info = {"probe_steps": k, "weights_k": key, "windows": [list(x) for x in wins], "feature_step": f_step,
-            "backend": f"gpu ({device})",
+            "backend": str(device), "source": source, **extra,
             "area_1": round(float((label_img == 0).mean()), 4), "area_2": round(float((label_img == 1).mean()), 4)}
     return label_img, info
 

@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-snapref-regionmask"
-version = "0.2.0"
+version = "0.3.0"
 description = "Region masks for SnapRef references on Anima: one reference image per character, each read only inside its own box."
 readme = "README.md"
 license = { file = "LICENSE" }

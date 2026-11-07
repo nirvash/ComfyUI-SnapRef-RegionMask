@@ -27,7 +27,7 @@
         "45",
         0
       ],
-      "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress"
+      "text": "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt"
     }
   },
   "12": {
@@ -67,7 +67,7 @@
         "28",
         0
       ],
-      "seed": 20261103504,
+      "seed": 20261107211,
       "steps": 30,
       "cfg": 4.0,
       "sampler_name": "er_sde",
@@ -101,13 +101,13 @@
   "7": {
     "class_type": "LoadImage",
     "inputs": {
-      "image": "snapref_region_mask_ref_A.png"
+      "image": "snapref_region_mask_ref_C.png"
     }
   },
   "72": {
     "class_type": "LoadImage",
     "inputs": {
-      "image": "snapref_region_mask_ref_B.png"
+      "image": "snapref_region_mask_ref_D.png"
     }
   },
   "4": {
@@ -191,11 +191,12 @@
         "45",
         0
       ],
-      "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+      "text": "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
       "person_1": "girl on the left",
       "person_2": "girl on the right",
       "block_weights": "none",
-      "auto_mask": "hakushi_anima_gt_v1"
+      "auto_mask": "hakushi_anima_gt_v1",
+      "dump_path": ""
     }
   },
   "93": {
@@ -206,7 +207,7 @@
         0
       ],
       "add_noise": "enable",
-      "noise_seed": 20261103504,
+      "noise_seed": 20261107211,
       "steps": 30,
       "cfg": 4.0,
       "sampler_name": "er_sde",
@@ -266,11 +267,13 @@
         "45",
         0
       ],
-      "text": "masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress",
+      "text": "masterpiece, best quality, 2girls, park, picnic on a blanket on the grass, sitting side by side, sandwiches, picnic basket, sunny day, blue sky, upper body, the girl on the left is holding a sandwich and smiling, the girl on the right is pouring tea from a thermos, the girl on the left has pink hair in twin buns and blue eyes, and wears a light blue hoodie with a bunny ears hood and a white pleated skirt, the girl on the right has short orange hair with a green hairpin and green eyes, and wears an orange overall dress over a white t-shirt",
       "person_1": "girl on the left",
       "person_2": "girl on the right",
       "block_weights": "none",
-      "auto_mask": "hakushi_anima_gt_v1"
+      "auto_mask": "hakushi_anima_gt_v1",
+      "ref_affinity": true,
+      "dump_path": ""
     }
   },
   "111": {
@@ -304,7 +307,7 @@
   "114": {
     "class_type": "RandomNoise",
     "inputs": {
-      "noise_seed": 20261103504
+      "noise_seed": 20261107211
     }
   },
   "115": {
@@ -374,7 +377,9 @@
         "110",
         1
       ],
-      "weights": "hakushi_anima_gt_v1"
+      "weights": "hakushi_anima_gt_v1",
+      "source": "both",
+      "ref_weight": 1.0
     }
   },
   "118": {
@@ -405,38 +410,6 @@
         "119",
         1
       ]
-    }
-  },
-  "96": {
-    "class_type": "SnapRefRegionAutoMaskPanel",
-    "inputs": {
-      "probe_image": [
-        "117",
-        0
-      ],
-      "final_image": [
-        "8",
-        0
-      ],
-      "mask_1": [
-        "119",
-        0
-      ],
-      "mask_2": [
-        "119",
-        1
-      ],
-      "caption": "seed 20261103504   1216x832   30 steps   hakushiMixAnima_v10.safetensors   refs snapref_region_mask_ref_A.png,snapref_region_mask_ref_B.png\nprompt: masterpiece, best quality, 2girls, cafe interior, sitting across a small round table by the window, strawberry parfait, latte, afternoon sunlight, potted plants, cozy atmosphere, upper body, the girl on the left is taking a photo of a strawberry parfait with her smartphone, with a calm gentle smile, the girl on the right is giggling with a hand over her mouth, the girl on the left has a silver bob and wears a red beret, a white blouse with a large black ribbon bow and a black high-waist skirt, the girl on the right has long wavy teal hair with a yellow hair ribbon and round glasses, and wears a pastel yellow knit cardigan over a white lace dress\nauto mask: pass 1 4 steps, weights hakushi_anima_gt_v1, refined after 8 SnapRef steps"
-    }
-  },
-  "92": {
-    "class_type": "SaveImage",
-    "inputs": {
-      "images": [
-        "96",
-        0
-      ],
-      "filename_prefix": "snapref_region_auto_mask_panel"
     }
   }
 }

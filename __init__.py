@@ -19,13 +19,16 @@ import math
 import torch
 import comfy.patcher_extension
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 KEY = "snapref_region_mask"
 OUTER_KEY = "snapref_region_mask_outer"
 FULL_BATCH_KEY = "snapref_region_mask_full_batch"
 SNAPREF_KEY = "snapref"   # SnapRef's wrapper key (snapref.WRAPPER_KEY)
 _REGION = {"bias": None}   # per-call token biases, one tensor per reference box
+# transformer_options key of a callback(block_index, [lse per reference]) set by SnapRef Region Probe (ref_affinity):
+# how strongly each image token attends to each reference before the region bias
+AFFINITY_KEY = "snapref_ref_affinity"
 
 
 def _lse_attention(q, k, v):
@@ -69,6 +72,7 @@ def _attach(dm):
             # softmax over [target keys; reference keys + bias] computed group by group and merged by log-sum-exp
             parts = [(0.0, *_lse_attention(qh, k.transpose(1, 2), v.transpose(1, 2)))]
             start = 0
+            lses = []
             for gi, (size, b) in enumerate(zip(sizes, biases)):
                 # reference gi reads box gi; the last box repeats for extra references
                 tok = bias_tok[min(gi, len(bias_tok) - 1)].to(q.device).view(1, 1, S, 1)
@@ -76,7 +80,11 @@ def _attach(dm):
                 vr = v_r[:, start:start + size].expand(B, -1, -1, -1).to(q.dtype).transpose(1, 2)
                 start += size
                 out_r, lse_r = _lse_attention(qh, kr, vr)
+                lses.append(lse_r)
                 parts.append((tok + b, out_r, lse_r))
+            record = transformer_options.get(AFFINITY_KEY)
+            if record is not None:
+                record(_index, lses)
             m = torch.stack([(lse + b).expand_as(parts[0][2]) for b, _, lse in parts]).amax(dim=0)
             num, den = 0.0, 0.0
             for b, o, lse in parts:

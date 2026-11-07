@@ -133,3 +133,45 @@ def test_node_inputs():
     assert {"model", "layout", "split", "feather", "outside_strength", "ref_start"} <= set(spec["required"])
     assert spec["required"]["layout"][0] == node.LAYOUTS
     assert {"x", "y", "width", "height", "x_2", "y_2", "width_2", "height_2", "mask_1", "mask_2"} <= set(spec["optional"])
+
+
+def test_masked_attention_reports_reference_affinity():
+    """With SnapRef Region Probe's callback in transformer_options, the hooked self-attention reports one
+    log-sum-exp per reference (before the region bias). Needs CUDA (the masked path runs in fp16 there)."""
+    if not torch.cuda.is_available():
+        return
+    dev, dt = torch.device("cuda"), torch.float16
+    B, S, H, D, N = 1, 16, 2, 8, 4
+    torch.manual_seed(0)
+    k_r = torch.randn(1, 2 * N, H, D, device=dev, dtype=dt)
+    v_r = torch.randn(1, 2 * N, H, D, device=dev, dtype=dt)
+
+    class Attn:
+        def __init__(self):
+            self._ref_kv_state = {"cache": [(k_r, v_r)], "sizes": [N, N], "biases": [0.0, 0.0]}
+            self.forward = lambda *a, **k: None
+
+        def compute_qkv(self, x, context, rope_emb=None, transformer_options={}):
+            q = x.view(B, S, H, D)
+            return q, q.clone(), q.clone()
+
+        def output_proj(self, t):
+            return t
+
+        def output_dropout(self, t):
+            return t
+
+    attn = Attn()
+    dm = types.SimpleNamespace(blocks=[types.SimpleNamespace(self_attn=attn)])
+    node._REGION["bias"] = [torch.zeros(S, device=dev), torch.full((S,), float("-inf"), device=dev)]
+    got = []
+    restore = node._attach(dm)
+    try:
+        out = attn.forward(torch.randn(B, S, H * D, device=dev, dtype=dt), None,
+                           transformer_options={node.AFFINITY_KEY: lambda block, lses: got.append((block, lses))})
+    finally:
+        node._detach(restore)
+        node._REGION["bias"] = None
+    assert out.shape == (B, S, H * D)
+    assert len(got) == 1 and got[0][0] == 0 and len(got[0][1]) == 2
+    assert all(l.shape == (B, H, S, 1) and torch.isfinite(l).all() for l in got[0][1])   # bias not applied
