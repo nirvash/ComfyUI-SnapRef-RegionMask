@@ -381,3 +381,53 @@ def test_combined_score_flips_only_weak_person_term_regions():
     assert ((same > 0) == (att > 0)).all()
     flat, info1 = node.combined_score(att, torch.full_like(aff, 0.5), 1.0)
     assert info1["ref_weight_used"] == 0.0 and torch.equal(flat, att)   # no separation: keep the person terms
+
+
+def test_layout_positions_are_detected_in_the_prompt():
+    prompt = ("2girls, cafe, the girl on the left has a silver bob, the man standing on the right wears a suit, "
+              "the cat at the top of the shelf")
+    assert node.term_position("girl on the left") == "left"
+    assert node.term_position("1girl | girl", prompt) == "left"
+    assert node.term_position("1man | man", prompt) == "right"
+    assert node.term_position("1girl | girl", "the left girl smiles") == "left"
+    assert node.term_position("1girl | girl", "1girl, 1man, park") is None            # no position stated
+    assert node.term_position("1girl | girl", "girl on the left, girl on the right") is None   # ambiguous
+
+
+def test_instance_embedding_separates_tokens_that_attend_to_each_other():
+    torch.manual_seed(0)
+    S, H, D = 40, 2, 8
+    group = torch.arange(S) % 2 == 0                       # interleaved: position does not tell the groups apart
+    centre = torch.randn(2, H, D) * 3
+    q = centre[group.long()] + 0.1 * torch.randn(S, H, D)
+    rec = node.Recorder(["a", "b"], [[0], [1]])
+    rec.add_instance(5, 12, q, q.clone())
+    emb = rec.instance[(5, 12)].float()
+    assert emb.shape == (S, node.INSTANCE_DIM)
+    first = emb[:, 0]
+    assert ((first[group] > 0).all() and (first[~group] < 0).all()) or ((first[group] < 0).all() and (first[~group] > 0).all())
+
+
+def test_instance_vote_keeps_a_person_together():
+    torch.manual_seed(0)
+    gh, gw = 4, 8
+    score = torch.ones(gh, gw)
+    score[:, 4:] = -1.0
+    score[0, 4] = -1.5                       # a head lying in the other half: its own score says person 2
+    person1 = torch.zeros(gh, gw, dtype=torch.bool)
+    person1[:, :4] = True
+    person1[0, 4] = True                     # ... but it attends with person 1's tokens
+    emb = torch.zeros(gh * gw, node.INSTANCE_K)
+    emb[person1.flatten(), 0] = 1.0
+    emb[~person1.flatten(), 1] = 1.0
+    out = node.instance_vote(score, emb + 0.01 * torch.randn_like(emb))
+    assert out[0, 4] > 0 and (out[person1] > 0).all() and (out[~person1] < 0).all()
+
+
+def test_fitted_terms_decide_the_block_weights():
+    rec = types.SimpleNamespace(terms=["1girl | girl", "1man | man"])
+    assert node.fitted_terms(rec)
+    rec.terms = ["lying girl", "sitting girl"]
+    assert not node.fitted_terms(rec)
+    rec.terms = ["girl on the left", "girl on the right"]
+    assert not node.fitted_terms(rec)

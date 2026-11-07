@@ -18,6 +18,7 @@ import json
 import logging
 import math
 import os
+import re
 
 import torch
 import torch.nn.functional as F
@@ -114,6 +115,7 @@ class Recorder:
         self.counts = {}     # step index -> contributions summed
         self.blocks = {}     # (step index, block index) -> [G, S] float16 (cpu), for per-layer analysis
         self.features = {}   # (step index, block index) -> [S, FEATURE_DIM] float16: PCA of the token features
+        self.instance = {}   # (step index, block index) -> [S, INSTANCE_DIM] float16: spectral embedding of self-attention
         self.progress = {}   # step index -> fraction
         self.grid = None     # (T, gh, gw)
         self.total_steps = None
@@ -150,6 +152,24 @@ class Recorder:
             return None
         return sum(self.affinity[i] / self.aff_counts[i] for i in self.affinity) / len(self.affinity)
 
+    def add_instance(self, idx, block, q, k):
+        """q, k [S, H, D] of the self-attention (target tokens only). Keeps a spectral embedding of the token-to-token
+        attention: tokens that attend to each other (the same person, the same object) get close coordinates."""
+        S, H, Dh = q.shape
+        A = torch.zeros(S, S, device=q.device, dtype=torch.float32)
+        for h in range(H):
+            A += ((q[:, h].float() @ k[:, h].float().T) * Dh ** -0.5).softmax(-1)
+        A /= H
+        Wm = (A + A.T) / 2
+        Wm.fill_diagonal_(0)
+        d = Wm.sum(1).clamp_min(1e-12).rsqrt()
+        L = d[:, None] * Wm * d[None, :]
+        _, vec = torch.linalg.eigh(L)
+        emb = vec[:, -(INSTANCE_DIM + 1):-1].flip(1) * d[:, None]   # skip the trivial top eigenvector
+        emb = emb / emb.norm(dim=0, keepdim=True).clamp_min(1e-12)
+        self.instance[(idx, block)] = emb.half().cpu()
+        del A, Wm, L, vec
+
     def add_feature(self, idx, block, x):
         """x [S, D] token features after self-attention (the cross-attention input): keep a PCA projection."""
         if idx not in self.feature_steps or block not in self.feature_blocks:
@@ -177,13 +197,21 @@ class Recorder:
             for (i, b), f in self.features.items():
                 feats[f_steps.index(i), f_blocks.index(b)] = f.numpy()
             extra = {'features': feats, 'feature_steps': np.array(f_steps), 'feature_blocks': np.array(f_blocks)}
+        if self.instance:
+            i_steps = sorted({i for i, _ in self.instance})
+            i_blocks = sorted({b for _, b in self.instance})
+            inst = np.zeros((len(i_steps), len(i_blocks), S, INSTANCE_DIM), dtype=np.float16)
+            for (i, b), e in self.instance.items():
+                inst[i_steps.index(i), i_blocks.index(b)] = e.numpy()
+            extra.update(instance=inst, instance_steps=np.array(i_steps), instance_blocks=np.array(i_blocks))
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         aff = self.affinity_map()
         if aff is not None:
             extra['affinity'] = aff.numpy().astype(np.float32)
         np.savez_compressed(path, per_block=per_block, steps=np.array(steps),
                             progress=np.array([self.progress[i] for i in steps]),
-                            grid=np.array(self.grid), terms=np.array(self.terms), **extra)
+                            grid=np.array(self.grid), terms=np.array(self.terms),
+                            prompt=np.array(getattr(self, "prompt", "")), **extra)
 
     def window(self, end):
         """Mean map [G, S] over steps with progress < end (end >= 1 means every step), or None."""
@@ -202,11 +230,33 @@ AFFINITY_KEY = "snapref_ref_affinity"   # same key as SnapRef Region Mask reads
 FEATURE_STEPS = (3, 8, 12, 20, 28)
 FEATURE_BLOCKS = (4, 8, 12, 16, 20, 24)
 FEATURE_DIM = 64
+# analysis dumps: spectral embedding of the self-attention (which tokens attend to each other) at these steps / blocks
+INSTANCE_STEPS = (4, 8, 12, 20)
+INSTANCE_BLOCKS = (8, 12, 16, 20)
+INSTANCE_DIM = 8
+# automatic masks: one spectral embedding of block 16's self-attention, at step 8 or the last step of a shorter pass
+INSTANCE_AUTO_STEP = 8
+INSTANCE_AUTO_BLOCK = 16
+INSTANCE_K = 4          # instances (k-means on the first INSTANCE_K embedding dimensions)
+INSTANCE_BLEND = 0.3    # share of the token's own score kept next to its instance mean
+INSTANCE_RESTARTS = 8
 
 
 def _attach(dm, recorder, idx):
     restore = []
+    want_instance = idx in getattr(recorder, "instance_steps", ())
+    selfin = {}   # block index -> (self-attention input, rope) of this call, read by the cross-attention hook
     for block_index, block in enumerate(dm.blocks):
+        sattn = getattr(block, "self_attn", None)
+        if want_instance and block_index in recorder.instance_blocks and sattn is not None:
+            sprev = sattn.forward
+
+            def sforward(x, context=None, rope_emb=None, transformer_options={}, _prev=sprev, _b=block_index):
+                selfin[_b] = (x, rope_emb)
+                return _prev(x, context, rope_emb=rope_emb, transformer_options=transformer_options)
+
+            restore.append((sattn, sprev))
+            sattn.forward = sforward
         attn = getattr(block, "cross_attn", None)
         if attn is None or not hasattr(attn, "compute_qkv"):
             continue
@@ -234,6 +284,12 @@ def _attach(dm, recorder, idx):
                                      block=_b if recorder.keep_blocks else None)
                         if recorder.keep_features:
                             recorder.add_feature(idx, _b, x[r][0])
+                        if _b in selfin:
+                            sx, srope = selfin.pop(_b)
+                            sa = dm.blocks[_b].self_attn
+                            if sx.shape[0] == x.shape[0]:
+                                sq, sk, _ = sa.compute_qkv(sx[r], None, rope_emb=srope, transformer_options=transformer_options)
+                                recorder.add_instance(idx, _b, sq[0], sk[0])
             return _prev(x, context, rope_emb=rope_emb, transformer_options=transformer_options)
 
         restore.append((attn, previous))
@@ -271,6 +327,9 @@ def _make_wrapper(recorder, step_offset=0, total_steps=0):
             recorder.reset()   # a new sampling run with the same (cached) model
         recorder.last_idx = idx
         recorder.total_steps = total_steps or len(opts.get("sample_sigmas")) - 1
+        if getattr(recorder, "instance_auto", False):
+            recorder.instance_steps = {min(INSTANCE_AUTO_STEP, recorder.total_steps - 1)}
+            recorder.instance_blocks = {INSTANCE_AUTO_BLOCK}
         recorder.progress[idx] = progress
         p = int(getattr(dm, "patch_spatial", 2))
         T = x.shape[2] if x.ndim == 5 else 1
@@ -316,6 +375,10 @@ class SnapRefRegionProbe:
             "ref_affinity": ("BOOLEAN", {"default": False,
                                          "tooltip": "also record how strongly each image token attends to each SnapRef "
                                                     "reference (needs SnapRef Region Mask before this probe)"}),
+            "instance_mask": ("BOOLEAN", {"default": True,
+                                          "tooltip": "with auto_mask: also record which image tokens attend to each other "
+                                                     "(one self-attention map, block 16), so Auto Mask can keep each "
+                                                     "person together (a head on someone's lap, crossed arms)"}),
         }}
 
     RETURN_TYPES = ("MODEL", "REGION_PROBE")
@@ -324,7 +387,7 @@ class SnapRefRegionProbe:
     DESCRIPTION = "Records where the image attends to the person 1 / person 2 terms during sampling."
 
     def apply(self, model, clip, text, person_1, person_2, block_weights="none", dump_path="", auto_mask="none",
-              continue_from=None, step_offset=0, total_steps=0, ref_affinity=False):
+              continue_from=None, step_offset=0, total_steps=0, ref_affinity=False, instance_mask=True):
         if continue_from is not None:
             m = model.clone()
             self._wrap(m, _make_wrapper(continue_from["recorder"], step_offset, total_steps))
@@ -354,6 +417,10 @@ class SnapRefRegionProbe:
                             keep_blocks=dumping or weights is not None or auto is not None,
                             keep_features=bool(f_steps), feature_steps=f_steps, feature_blocks=f_blocks)
         recorder.ref_affinity = bool(ref_affinity)
+        recorder.instance_steps = set(INSTANCE_STEPS) if dumping else set()
+        recorder.instance_blocks = set(INSTANCE_BLOCKS)
+        recorder.instance_auto = bool(instance_mask) and auto is not None and not dumping
+        recorder.prompt = text   # the layout hint looks for "<person> on the left / right" here
         m = model.clone()
         self._wrap(m, _make_wrapper(recorder, step_offset, total_steps))
         return (m, {"recorder": recorder, "prompt_tokens": len(prompt_ids), "dump_path": dump_path.strip(),
@@ -378,8 +445,7 @@ COLORS = (torch.tensor([1.0, 0.15, 0.15]), torch.tensor([0.15, 0.45, 1.0]))
 def normalize(maps, low=0.02, high=0.995):
     """[G, h, w] -> each map stretched so its `low` quantile is 0 and its `high` quantile is 1."""
     flat = maps.flatten(1).float()
-    lo = flat.quantile(low, dim=1).view(-1, 1, 1)
-    hi = flat.quantile(high, dim=1).view(-1, 1, 1)
+    lo, hi = flat.quantile(flat.new_tensor([low, high]), dim=1)[..., None, None]
     return ((maps - lo) / (hi - lo).clamp_min(1e-12)).clamp(0, 1)
 
 
@@ -526,16 +592,32 @@ def block_features(rec, picked, T, gh, gw, device=None):
     nb = 1 + max(b for _, b in rec.blocks)
     maps = torch.stack([torch.stack([rec.blocks[(i, b)] for b in range(nb)]) for i in picked])
     maps = maps.to(device).float().mean(0) if device is not None else maps.float().mean(0)
-    feats = []
-    for b in range(nb):
-        n = normalize(maps[b].view(-1, T, gh, gw)[:, 0])
-        feats.append(n[0] - n[1])
-    return torch.stack(feats)
+    n = normalize(maps.view(-1, T, gh, gw)[:, 0]).view(nb, -1, gh, gw)
+    return n[:, 0] - n[:, 1]
 
 
 def weighted_score(feats, w):
     """Score map [gh, gw]: > 0 means person 1."""
     return (feats * w[:-1].view(-1, 1, 1)).sum(0) + w[-1]
+
+
+_POSITION = r"(?:on|at|to) the (left|right|top|bottom)\b"
+
+
+def term_position(term, prompt=""):
+    """'left' / 'right' / 'top' / 'bottom' for one person term, or None.
+
+    Read from the term itself ("girl on the left"), else from the prompt: a variant of the term followed within a few
+    words by "on / at / to the <side>" ("the girl on the left has ...", "the man standing on the right"), or preceded
+    by the side ("the left girl"). Only an unambiguous single side counts."""
+    found = set(re.findall(r"\b" + _POSITION, term.casefold()))
+    if not found and prompt:
+        text = prompt.casefold()
+        for variant in split_terms(term.casefold()):
+            v = re.escape(variant)
+            found |= set(re.findall(r"\b" + v + r"\b(?:\s+[\w'-]+){0,3}?\s+" + _POSITION, text))
+            found |= set(re.findall(r"\b(left|right|top|bottom)(?:-side|\s+side)?\s+" + v + r"\b", text))
+    return found.pop() if len(found) == 1 else None
 
 
 def score_split(score):
@@ -786,9 +868,10 @@ def kmeans_grid(X, k, gh, gw, iters=25):
     idx = (ys[:, None] * gw + xs[None, :]).flatten()[:k]
     c = X[idx].clone()
     k = len(idx)
+    ones = X.new_ones(len(X))
     for _ in range(iters):
         lab = torch.cdist(X, c).argmin(1)
-        cnt = torch.bincount(lab, minlength=k)
+        cnt = X.new_zeros(k).scatter_add_(0, lab, ones)
         new = torch.zeros_like(c).index_add_(0, lab, X) / cnt.clamp_min(1)[:, None].float()
         c = torch.where((cnt > 0)[:, None], new, c)
     return torch.cdist(X, c).argmin(1)
@@ -848,20 +931,23 @@ def slic_t(rgb, n_segments=800, compactness=10.0, iters=10):
             yy, xx = cell_y + dy, cell_x + dx
             ok = (yy >= 0) & (yy < ny) & (xx >= 0) & (xx < nx)
             cand.append(torch.where(ok, yy.clamp(0, ny - 1) * nx + xx.clamp(0, nx - 1), -1))
-    cand = torch.stack(cand)                                                       # [9, N]
-    valid = cand >= 0
-    cand0 = cand.clamp_min(0)
+    candidates = torch.stack(cand)                                                 # [9, N]
+    del cand
+    invalid = candidates < 0
+    candidates.clamp_min_(0)
     spatial = (compactness / step) ** 2
     K = ny * nx
+    ones = feat.new_ones(len(feat))
     for _ in range(iters):
-        c = centres[cand0]                                                         # [9, N, 5]
-        d = ((c[..., :3] - feat[None, :, :3]) ** 2).sum(-1) + spatial * ((c[..., 3:] - feat[None, :, 3:]) ** 2).sum(-1)
-        d = torch.where(valid, d, torch.full_like(d, float("inf")))
-        ids = cand0.gather(0, d.argmin(0, keepdim=True))[0]
+        c = centres[candidates]                                                    # [9, N, 5]
+        c.sub_(feat).square_()
+        d = c[..., :3].sum(-1).add_(c[..., 3:].sum(-1), alpha=spatial)
+        d.masked_fill_(invalid, float("inf"))
+        ids = candidates.gather(0, d.argmin(0, keepdim=True))[0]
+        del c, d
         sums = torch.zeros(K, 5, device=dev).index_add_(0, ids, feat)
-        cnt = torch.bincount(ids, minlength=K).float()
-        keep = cnt > 0
-        centres[keep] = sums[keep] / cnt[keep, None]
+        cnt = feat.new_zeros(K).scatter_add_(0, ids, ones)
+        centres = torch.where(cnt[:, None] > 0, sums / cnt[:, None].clamp_min(1), centres)
     return ids.view(H, W) + 1
 
 
@@ -1035,26 +1121,95 @@ def _auto_parts(rec, weights):
     return order, k, key, entry, wins, f_step
 
 
+def instance_embedding(rec, device):
+    """The recorded self-attention embedding used by the automatic masks ([S, INSTANCE_K] normalized), or None."""
+    keys = sorted(i for i, b in getattr(rec, "instance", {}) if b == INSTANCE_AUTO_BLOCK)
+    if not keys:
+        return None
+    step = max([i for i in keys if i <= INSTANCE_AUTO_STEP] or keys[:1])
+    e = rec.instance[(step, INSTANCE_AUTO_BLOCK)][:, :INSTANCE_K].to(device).float()
+    return F.normalize(e, dim=1)
+
+
+def kmeans_restarts(X, k, restarts=INSTANCE_RESTARTS, iters=30):
+    """k-means from several random starts (fixed seeds), keeping the lowest within-cluster distance: the split of the
+    embedding into instances must not depend on one lucky start."""
+    best, best_cost = None, None
+    for seed in range(restarts):
+        g = torch.Generator(device=X.device).manual_seed(seed)
+        c = X[torch.randperm(len(X), generator=g, device=X.device)[:k]].clone()
+        for _ in range(iters):
+            lab = torch.cdist(X, c).argmin(1)
+            cnt = torch.bincount(lab, minlength=k)
+            new = torch.zeros_like(c).index_add_(0, lab, X) / cnt.clamp_min(1)[:, None].float()
+            c = torch.where((cnt > 0)[:, None], new, c)
+        d = torch.cdist(X, c)
+        lab = d.argmin(1)
+        cost = float(d.gather(1, lab[:, None]).square().sum())
+        if best_cost is None or cost < best_cost:
+            best, best_cost = lab, cost
+    return best
+
+
+def instance_vote(score, emb):
+    """score [gh, gw] -> each token keeps INSTANCE_BLEND of its own (standardized) score plus the mean score of its
+    instance: k-means of the self-attention embedding, without position, so a person stays together across the image."""
+    z = (score / score.std(correction=0).clamp_min(1e-6)).flatten()
+    lab = kmeans_restarts(emb, INSTANCE_K)
+    inst = torch.zeros(INSTANCE_K, device=z.device).index_add_(0, lab, z)
+    inst = inst / torch.bincount(lab, minlength=INSTANCE_K).clamp_min(1).float()
+    return (inst[lab] + INSTANCE_BLEND * z.clamp(-2, 2)).view(score.shape)
+
+
+# person terms the bundled block weights were fitted to; any other term (positions, roles) uses the plain block mean
+FITTED_TERMS = {"1girl", "girl", "1man", "man", "1boy", "boy"}
+
+
+def fitted_terms(rec):
+    """Both person terms are only the words the learned block weights were fitted to (1girl / 1man ...)."""
+    return all(set(split_terms(t.casefold())) <= FITTED_TERMS for t in rec.terms)
+
+
 def _auto_label_t(rec, image, weights, device, source="attention", ref_weight=1.0):
     order, k, key, entry, wins, f_step = _auto_parts(rec, weights)
     T, gh, gw = rec.grid
     H, W = image.shape[:2]
     extra = {}
+    emb = instance_embedding(rec, device)
     if source == "reference":
         score = affinity_score(rec, T, gh, gw, device)
     else:
-        feats = torch.cat([block_features(rec, order[a:b], T, gh, gw, device) for a, b in wins])
-        score = weighted_score(feats, torch.tensor(entry["weights"], dtype=torch.float32, device=device))
+        if not fitted_terms(rec):
+            # the learned block weights were fitted to 1girl / 1man; position or role terms ("girl on the left",
+            # "sitting girl") do better with the plain mean of the blocks
+            score = block_features(rec, order, T, gh, gw, device).mean(0)
+            extra["score"] = "plain mean"
+        else:
+            feats = torch.cat([block_features(rec, order[a:b], T, gh, gw, device) for a, b in wins])
+            score = weighted_score(feats, torch.tensor(entry["weights"], dtype=torch.float32, device=device))
+        if emb is not None:
+            score = instance_vote(score, emb)
+            extra["instance"] = True
         if source == "both":
             aff = affinity_score(rec, T, gh, gw, device) + 0.5
-            score, extra = combined_score(score, aff, ref_weight)
+            score, more = combined_score(score, aff, ref_weight)
+            extra.update(more)
     score_img = upsample(score[None], H, W)[0]
+    sp = slic_t(image.to(device).float().clamp(0, 1), n_segments=int(weights["slic_segments"]), compactness=10.0)
+    if emb is not None and source != "reference":
+        label_img = vote_t(score_img, sp).cpu().numpy()
+        info = {"probe_steps": k, "backend": str(device), "source": source, **extra,
+                "area_1": round(float((label_img == 0).mean()), 4), "area_2": round(float((label_img == 1).mean()), 4)}
+        return label_img, info
     parts = token_parts_t([rec.features[(f_step, b)] for b in weights["feature_blocks"]], gh, gw,
                           int(weights["parts"]), float(weights["position_weight"]), device)
     parts = F.interpolate(parts[None, None].float(), size=(H, W), mode="nearest")[0, 0].long()
     coarse = vote_t(score_img, parts)
-    sp = slic_t(image.to(device).float().clamp(0, 1), n_segments=int(weights["slic_segments"]), compactness=10.0)
-    label_img = vote_t(torch.where(coarse == 0, 1.0, -1.0), sp).cpu().numpy()
+    pixel_score = torch.where(coarse == 0, 1.0, -1.0)
+    if source == "attention":
+        # Let strong token evidence survive a part vote, without letting outliers dominate a superpixel.
+        pixel_score.lerp_((score_img / score.std(correction=0).clamp_min(1e-6)).clamp_(-2, 2), 0.6)
+    label_img = vote_t(pixel_score, sp).cpu().numpy()
     info = {"probe_steps": k, "weights_k": key, "windows": [list(x) for x in wins], "feature_step": f_step,
             "backend": str(device), "source": source, **extra,
             "area_1": round(float((label_img == 0).mean()), 4), "area_2": round(float((label_img == 1).mean()), 4)}

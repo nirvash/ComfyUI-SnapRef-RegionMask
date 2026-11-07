@@ -70,26 +70,29 @@ Instead of drawing regions, estimate each person's region from the generation it
 
 | Node | Role |
 |---|---|
-| SnapRef Region Probe | MODEL → MODEL, REGION_PROBE. Records how image tokens attend to two person terms of the prompt (`person_1` for SnapRef `image`, `person_2` for `image_2`; variants separated by `\|`). Set `auto_mask` to the weights name. With `ref_affinity` on (after SnapRef Region Mask) it also records which reference each image token resembles. Put it last in the model chain |
-| SnapRef Region Auto Mask | IMAGE + REGION_PROBE → `mask_1`, `mask_2` for SnapRef Region Mask. Learned per-block weights, token-feature parts and a superpixel vote; about 0.1 s on the GPU. `source`: `attention` (person terms), `reference` (resemblance to each reference) or `both` (person terms for the bodies, the resemblance adds parts such as hats and hoods; `ref_weight` 1) |
+| SnapRef Region Probe | MODEL → MODEL, REGION_PROBE. Records how image tokens attend to two person terms of the prompt (`person_1` for SnapRef `image`, `person_2` for `image_2`; variants separated by `\|`). Set `auto_mask` to the weights name. With `instance_mask` (on by default) it also records which image tokens attend to each other in block 16 (one step), so a person is kept together. With `ref_affinity` on (after SnapRef Region Mask) it records which reference each image token resembles. Put it last in the model chain |
+| SnapRef Region Auto Mask | IMAGE + REGION_PROBE → `mask_1`, `mask_2` for SnapRef Region Mask. Groups the image tokens into instances by the recorded self-attention, gives each instance the person whose term it attends to, and snaps the outline to image edges (SLIC); about 0.2 s on the GPU. `source`: `attention` (person terms), `reference` (resemblance to each reference) or `both` (person terms, plus parts such as hats that resemble one reference; `ref_weight` 1) |
 | SnapRef Region Auto Mask Panel | Draws the regions over the estimation image and the final image, for checking |
 
-Recommended graph (same seed, sampler, scheduler and CFG in every stage, 30 steps):
+Recommended graph (same seed, sampler, scheduler and CFG in both stages, 30 steps):
 
-1. **Draft**: model → Region Probe → KSamplerAdvanced steps 0–4 (`return_with_leftover_noise = disable`) → VAEDecode → Auto Mask → masks M4.
-2. **Refine**: SnapRef → Region Mask (M4) → Region Probe (`ref_affinity` on) → SamplerCustomAdvanced with the first 8 steps of the 30-step schedule (BasicScheduler → SplitSigmas at 8) → VAEDecode of `denoised_output` → Auto Mask (`source = both`) → masks M8. Region Mask counts progress inside the 8-step segment, so use `ref_start = 0.3125` to keep steps 0–2 without references as `0.1` does over 30 steps.
-3. **Final**: SnapRef → Region Mask (M8, `ref_start = 0.1`) → KSampler, 30 steps.
+1. **Estimate**: model → Region Probe (`auto_mask`, `instance_mask` on) → KSamplerAdvanced steps 0–8 (`return_with_leftover_noise = disable`) → VAEDecode → Auto Mask → masks.
+2. **Final**: SnapRef → Region Mask (the masks, `ref_start = 0.1`) → KSampler, 30 steps.
 
-The sample workflow `examples/snapref_region_mask_sample_auto.json` has this graph in three groups. Region Probe's `text` must be exactly the positive prompt: when you edit the prompt, paste it into both probes too. The UI shows `ref_start` of the refine stage as 0.31, which keeps the same steps without references.
+The masks come from step 8 without the references, so the prompt has to fix who is where. Use person terms that fit the composition, and refer to the people with the same words in the prompt, with their looks bound to them:
 
-The refine stage reads the references, so its composition matches the final stage; a mask from the draft alone drifts when SnapRef changes the layout. Stages 1–2 add about 5–6 s at 832×1216; recording the resemblance costs about nothing (SnapRef computes it anyway).
+- side by side: `girl on the left` / `girl on the right` ("the girl on the left has … and wears …")
+- a lap pillow: `lying girl` / `sitting girl` ("the sitting girl sits on the couch, the lying girl rests her head on the sitting girl's lap, the sitting girl has …"); left / right does not fit, the lying girl's head is on the other side
+- a girl and a man: `1girl | girl` / `1man | man`
 
-With the person terms alone, parts the prompt names only for one person (a beret, a bunny-ears hood) often fall to the other person or the background. `source = both` adds them back from the resemblance to the references, centred per image so a reference that dominates the whole picture does not take over.
+On three lap-pillow images (references used for the final pass, masks traced by hand) 3.8% of the person pixels went to the other person; one image takes about 16 s at 1216×832. Describing the looks in detail pulls the result toward the prompt rather than the references, so keep it to the features the references show.
+
+When SnapRef moves the composition a lot, a third stage helps: a 4-step draft, then SnapRef with the draft masks for steps 0–8 of the schedule and the masks estimated again from that pass (`source = both`, Region Mask `ref_start = 0.3125` inside the 8-step segment). The sample workflow `examples/snapref_region_mask_sample_auto.json` uses this variant. On the lap pillow it was worse (9.6%) and 4 s slower. Region Probe's `text` must be exactly the positive prompt: when you edit the prompt, paste it into the probes too.
 
 Limits:
 
-- The bundled weights `hakushi_anima_gt_v1` were fitted on hakushiMixAnima v1.0 with the person terms `1girl | girl` and `1man | man` (29 hand-checked images; on drafts 3–4% of the person pixels are given to the other person). Position words also worked with two girls (`girl on the left` / `girl on the right`, cafe and picnic scenes). Hair or clothing words do not: person 1 gets only the named items and most of the body goes to person 2.
-- The masks only limit where each reference is read. Words in the prompt and self-attention between image tokens still reach both people.
+- The bundled weights `hakushi_anima_gt_v1` were fitted on hakushiMixAnima v1.0 with the person terms `1girl | girl` and `1man | man` (29 hand-checked images). With other terms (positions, roles) Auto Mask uses the plain mean of the blocks instead, which did better there. Hair or clothing words as person terms do not work: person 1 gets only the named items.
+- Two people only. The masks only limit where each reference is read; words in the prompt and self-attention between image tokens still reach both people.
 
 [How the automatic masks work and how to fit your own weights](docs/auto_mask.en.md)
 

@@ -7,18 +7,24 @@ How SnapRef Region Probe and SnapRef Region Auto Mask estimate each person's reg
 ## Pipeline
 
 1. **Record** (Region Probe): at every step, from the cross-attention of every model block (28 in Anima), how much each image token attends to the `person_1` / `person_2` terms of the prompt. At chosen steps and blocks it also keeps the self-attention output (token features), reduced to 64 dimensions by PCA. The sampling result is not changed.
-2. **Score** (Auto Mask): per block, the normalized person 1 map minus the person 2 map; the learned per-block weights add them into one score per token (> 0 means person 1).
-3. **Parts**: k-means on the token features of one step (blocks 8, 12, 16) plus position, 192 parts. Each part takes the sign of its summed score, which turns the token-level speckle into coherent parts.
-4. **Pixels**: SLIC splits the estimation image into about 800 superpixels; each takes the majority, so the outline follows image edges.
+2. **Score** (Auto Mask): per block, the normalized person 1 map minus the person 2 map; the learned per-block weights add them into one score per token (> 0 means person 1). The weights were fitted to `1girl` / `1man`; for any other person terms the plain mean of the blocks is used.
+3. **Parts** (when no self-attention instances were recorded): k-means on the token features of one step (blocks 8, 12, 16) plus position, 192 parts. Each part takes the sign of its summed score, which turns the token-level speckle into coherent parts.
+4. **Pixels**: SLIC splits the estimation image into about 800 superpixels; each receives one label, so the outline follows image edges. With `source = attention`, the torch path mixes the part vote with the original token score so local evidence can survive the part vote.
 5. Output: `mask_1` (person 1) and `mask_2` (person 2). Every pixel goes to one of them, background included.
 
-One estimate takes about 0.1 s on the GPU (k-means with a grid initialisation and a fixed number of rounds, SLIC in torch). The CPU path (scikit-image) is kept and gives the same accuracy.
+The GPU path uses grid-initialized k-means with a fixed number of rounds and a torch implementation of SLIC. The CPU path (scikit-image) for `source = attention` keeps the original majority vote.
 
-## Why three stages
 
-- A mask from the draft alone (no SnapRef, 4 steps) drifts once SnapRef changes the composition.
-- So the draft masks drive SnapRef for steps 0–8, and the masks are estimated again from that pass's own recording and its x0 prediction (`denoised_output`). The final 30 steps then share its composition.
-- The refine stage samples part of the 30-step schedule (SplitSigmas), so SnapRef Region Mask's `ref_start` is rescaled to the segment (0.1 over 30 steps → 0.3125 over the 8-step segment).
+## Instances from self-attention
+
+Tokens of one person attend to each other while the image is generated, which is how hair, face and clothes stay consistent. With `instance_mask` the probe takes block 16's self-attention at one step (step 8, or the last step of a shorter pass), averages the heads into a token-to-token matrix (about 4000 × 4000 at 1 MP), and keeps the first eigenvectors of its normalized form (a spectral embedding, 8 dimensions). Auto Mask clusters the first 4 dimensions with k-means (4 clusters, 8 random starts, the lowest cost kept). Each token then takes its cluster's mean person score plus 0.3 of its own score, and SLIC snaps the outline to image edges. Recording costs about 0.08 s per pass, estimating about 0.1 s.
+
+This keeps a person together where the person terms alone fail: the lying girl's head on the other girl's lap attends to the person term of the side it lies on, but to its own body in self-attention. On six two-girl scenes and a lap pillow (no references, 30 steps, hand-traced masks) the person error went from 2.2% / 8.8% to 1.3% / 4.5%.
+
+## Stages
+
+- **Two stages (default)**: an 8-step pass without references gives the masks; the final pass reads each reference in its region. By step 8 the composition is settled and the instances are clear; at 4 steps they are not (37% on one lap-pillow image). This needs a prompt that fixes who is where (see the README).
+- **Three stages (`refine`)**: a 4-step draft, then SnapRef with the draft masks for steps 0–8 and the masks estimated again from that pass's own recording and its x0 prediction (`denoised_output`). Useful when the references move the composition. The refine pass samples part of the 30-step schedule (SplitSigmas), so SnapRef Region Mask's `ref_start` is rescaled to the segment (0.1 over 30 steps → 0.3125 over 8 steps).
 
 ## Per-block weights (`weights/*.json`)
 
