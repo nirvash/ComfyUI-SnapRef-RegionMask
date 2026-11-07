@@ -91,6 +91,8 @@ Limits:
 - The bundled weights `hakushi_anima_gt_v1` were fitted on hakushiMixAnima v1.0 with the person terms `1girl | girl` and `1man | man` (29 hand-checked images; on drafts 3–4% of the person pixels are given to the other person). Position words also worked with two girls (`girl on the left` / `girl on the right`, cafe and picnic scenes). Hair or clothing words do not: person 1 gets only the named items and most of the body goes to person 2.
 - The masks only limit where each reference is read. Words in the prompt and self-attention between image tokens still reach both people.
 
+[How the automatic masks work and how to fit your own weights](docs/auto_mask.en.md)
+
 ## Notes
 
 - Briefly describe each character's position, hair, eyes and clothing in the prompt. Examples were tested with SnapRef `strength = 0` (the default).
