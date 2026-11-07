@@ -82,7 +82,7 @@ MASKはモデルのトークン格子に合わせてリサイズされます。3
 マスクは参照なしの 8 step 目から作るので、誰がどこにいるかはプロンプトで決める必要があります。人物語は構図に合った語にし、プロンプトでも同じ語で人物を指して、見た目をその人物に結び付けて書きます。
 
 - 左右に並ぶ: `girl on the left` / `girl on the right`（「the girl on the left has … and wears …」）
-- 膝枕: `lying girl` / `sitting girl`（「the sitting girl sits on the couch, the lying girl rests her head on the sitting girl's lap, the sitting girl has …」）。横になる子の頭は反対側に来るので、左右の語は合いません
+- 膝枕: `lying girl` / `sitting girl`（「the sitting girl sits upright on the sofa, [容姿・服], the lying girl lies horizontally along the sofa with her head resting on the sitting girl's lap, [容姿・服]」）。横になる子の頭は反対側に来るので左右の語は合いません。Anima Text Encoder (Qwen) の属性混同を防ぐため「主語＋姿勢＋容姿」を直結させ、頭部二重生成を防ぐため「頭の載る位置（resting on lap）」を容姿より先に指定します
 - 女の子と男性: `1girl | girl` / `1man | man`
 
 膝枕3枚（本番で参照を使用、正解は手で輪郭を引いたもの）で、人物の画素のうち相手側になったのは3.8%でした。1216×832 で1枚約16秒です。見た目を詳しく書くほど、参照よりプロンプトに引きずられるので、参照で目立つ特徴にとどめてください。

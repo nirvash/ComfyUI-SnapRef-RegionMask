@@ -82,7 +82,7 @@ Recommended graph (same seed, sampler, scheduler and CFG in both stages, 30 step
 The masks come from step 8 without the references, so the prompt has to fix who is where. Use person terms that fit the composition, and refer to the people with the same words in the prompt, with their looks bound to them:
 
 - side by side: `girl on the left` / `girl on the right` ("the girl on the left has … and wears …")
-- a lap pillow: `lying girl` / `sitting girl` ("the sitting girl sits on the couch, the lying girl rests her head on the sitting girl's lap, the sitting girl has …"); left / right does not fit, the lying girl's head is on the other side
+- a lap pillow: `lying girl` / `sitting girl` ("the sitting girl sits upright on the sofa, [appearance], the lying girl lies horizontally along the sofa with her head resting on the sitting girl's lap, [appearance]"); left / right does not fit because the head crosses to the other side. Bind "subject + posture + appearance" directly to avoid attribute leakage in Qwen TE, and place head positioning before head features to prevent duplicate heads
 - a girl and a man: `1girl | girl` / `1man | man`
 
 On three lap-pillow images (references used for the final pass, masks traced by hand) 3.8% of the person pixels went to the other person; one image takes about 16 s at 1216×832. Describing the looks in detail pulls the result toward the prompt rather than the references, so keep it to the features the references show.

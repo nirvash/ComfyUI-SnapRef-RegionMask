@@ -1,5 +1,5 @@
 {
-  "id": "33a880aa-6c0d-4328-8716-8be960ac9791",
+  "id": "1cbfb586-3c71-4397-93a7-a95594789637",
   "revision": 0,
   "last_node_id": 97,
   "last_link_id": 32,
@@ -213,7 +213,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "masterpiece, best quality, 2girls, living room, sofa, bright room, daylight, lap pillow, the lying girl has pink hair in twin buns and blue eyes, wears a light blue hoodie with a bunny ears hood and a white skirt, and lies on the sofa resting her head on the lap, the sitting girl has short orange hair with a green hairpin and green eyes, wears an orange overall dress over a white t-shirt, and sits on the sofa gently stroking hair"
+        "masterpiece, best quality, anime illustration, 2girls, quiet sunlit living room, full bodies, side view, lap pillow, the sitting girl sits upright on the sofa, short orange hair with green hairpin and green eyes, orange overall dress over white t-shirt, the lying girl lies horizontally along the sofa with her head resting on the sitting girl's lap, pink hair in twin buns and blue eyes, light blue hoodie with bunny ears hood and white skirt, both faces visible, one hand gently stroking hair"
       ]
     },
     {
@@ -262,7 +262,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, extra limbs, bad anatomy, bad hands, fused bodies, extra person"
+        "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, extra head, multiple heads, 2heads, duplicate head, extra limbs, bad anatomy, bad hands, fused bodies, extra person"
       ]
     },
     {
@@ -575,7 +575,7 @@
         "Node name for S&R": "SnapRefRegionProbe"
       },
       "widgets_values": [
-        "masterpiece, best quality, 2girls, living room, sofa, bright room, daylight, lap pillow, the lying girl has pink hair in twin buns and blue eyes, wears a light blue hoodie with a bunny ears hood and a white skirt, and lies on the sofa resting her head on the lap, the sitting girl has short orange hair with a green hairpin and green eyes, wears an orange overall dress over a white t-shirt, and sits on the sofa gently stroking hair",
+        "masterpiece, best quality, anime illustration, 2girls, quiet sunlit living room, full bodies, side view, lap pillow, the sitting girl sits upright on the sofa, short orange hair with green hairpin and green eyes, orange overall dress over white t-shirt, the lying girl lies horizontally along the sofa with her head resting on the sitting girl's lap, pink hair in twin buns and blue eyes, light blue hoodie with bunny ears hood and white skirt, both faces visible, one hand gently stroking hair",
         "lying girl",
         "sitting girl",
         "none",
@@ -724,7 +724,7 @@
       },
       "widgets_values": [
         "enable",
-        20261107211,
+        20261107954,
         "fixed",
         30,
         4.0,
@@ -1446,7 +1446,7 @@
         "Node name for S&R": "KSampler"
       },
       "widgets_values": [
-        20261107211,
+        20261107954,
         "fixed",
         30,
         4.0,
